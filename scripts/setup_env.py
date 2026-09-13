@@ -1,7 +1,7 @@
 """
 环境准备（一键安装依赖）
 ===========================
-DWTRP 的必需依赖很轻（FastAPI + BM25 检索，见 requirements.txt）；
+TRPE 的必需依赖很轻（FastAPI + BM25 检索，见 requirements.txt）；
 向量检索所需的 torch / sentence-transformers 与嵌入模型是**可选组件**，
 本脚本会先装必需依赖，再询问是否安装可选组件。
 
@@ -10,7 +10,7 @@ DWTRP 的必需依赖很轻（FastAPI + BM25 检索，见 requirements.txt）；
     python scripts/setup_env.py --check             # 只检查当前环境，不做任何改动
     python scripts/setup_env.py --yes               # 非交互：只装必需依赖（跳过可选组件）
     python scripts/setup_env.py --embedding --download-model   # 连可选组件一起装好
-    python scripts/setup_env.py --venv D:\\envs\\dwtrp          # 指定虚拟环境目录
+    python scripts/setup_env.py --venv D:\\envs\\TRPE          # 指定虚拟环境目录
     python scripts/setup_env.py --pip-index https://pypi.tuna.tsinghua.edu.cn/simple
 
 Windows 用户通常直接双击 `setup.bat`；macOS / Linux 用 `./setup.sh`。
@@ -168,7 +168,7 @@ def check(py: str) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="DWTRP 环境准备")
+    parser = argparse.ArgumentParser(description="TRPE 环境准备")
     parser.add_argument("--venv", default=DEFAULT_VENV, help=f"虚拟环境目录（默认 {DEFAULT_VENV}）")
     parser.add_argument("--no-venv", action="store_true", help="不创建虚拟环境，直接用当前解释器")
     parser.add_argument("--embedding", action="store_true", help="安装可选依赖 torch + sentence-transformers")
@@ -180,7 +180,7 @@ def main() -> int:
     args = parser.parse_args()
 
     say("=" * 62)
-    say(" DWTRP 环境准备")
+    say(" TRPE 环境准备")
     say("=" * 62)
 
     py = sys.executable if args.no_venv else venv_python(args.venv)

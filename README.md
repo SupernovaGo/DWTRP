@@ -1,6 +1,6 @@
-# DWTRP · 动态世界文字角色扮演引擎
+# TRPE · 动态世界文字角色扮演引擎
 
-**Dynamic World Text Role-Playing** —— 一个以玩家为核心、多 Agent 协作的动态世界文字角色扮演引擎。
+**Text Role-Playing Engine(TRPE)** —— 一个以玩家为核心、多 Agent 协作的动态世界文字角色扮演引擎。
 
 *A player-centric, multi-agent collaborative dynamic-world text role-playing engine.*
 
@@ -107,10 +107,10 @@ setup.bat     :: 创建 .venv、安装必需依赖，并询问是否安装向量
 start.bat     :: 启动后端并自动打开浏览器（必要时先构建前端）
 ```
 
-`start.bat` 会依次寻找解释器：环境变量 `DWTRP_PYTHON` → 项目内 `.venv` → `py -3` → `PATH` 中的 `python`。也就是说：**只要你已经有一个 Python ≥ 3.11 的环境，把它指给 `DWTRP_PYTHON` 就能直接启动**，不需要再建虚拟环境：
+`start.bat` 会依次寻找解释器：环境变量 `TRPE_PYTHON` → 项目内 `.venv` → `py -3` → `PATH` 中的 `python`。也就是说：**只要你已经有一个 Python ≥ 3.11 的环境，把它指给 `TRPE_PYTHON` 就能直接启动**，不需要再建虚拟环境：
 
 ```bat
-set DWTRP_PYTHON=D:\Python\.venv\Scripts\python.exe
+set TRPE_PYTHON=D:\Python\.venv\Scripts\python.exe
 start.bat
 ```
 
@@ -282,7 +282,7 @@ DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
 ## 目录结构
 
 ```text
-DWTRP/
+TRPE/
 ├── README.md                     # 本文档
 ├── docs/
 │   ├── architecture.png          # 系统架构图

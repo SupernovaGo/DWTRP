@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# DWTRP 环境准备（macOS / Linux）：创建 .venv、安装必需依赖，可选安装向量检索依赖与模型。
+# TRPE 环境准备（macOS / Linux）：创建 .venv、安装必需依赖，可选安装向量检索依赖与模型。
 set -euo pipefail
 cd "$(dirname "$0")"
 export PYTHONIOENCODING=utf-8
 
-PY="${DWTRP_BOOTSTRAP_PYTHON:-}"
+PY="${TRPE_BOOTSTRAP_PYTHON:-}"
 if [ -z "$PY" ]; then
   for candidate in python3 python; do
     if command -v "$candidate" >/dev/null 2>&1; then PY="$candidate"; break; fi

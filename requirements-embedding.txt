@@ -1,4 +1,4 @@
-# DWTRP optional dependencies: vector (semantic) retrieval.
+# TRPE optional dependencies: vector (semantic) retrieval.
 # Without them, memory retrieval automatically falls back to BM25 keywords.
 # Large download (hundreds of MB to a few GB). Install either from
 # "Settings -> Runtime environment" in the UI, or manually:

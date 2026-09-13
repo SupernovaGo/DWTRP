@@ -61,7 +61,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="DWTRP", version="0.3.0", lifespan=lifespan)
+app = FastAPI(title="TRPE", version="0.3.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CONFIG["SERVER_CORS_ORIGINS"],
@@ -1283,7 +1283,7 @@ if os.path.isdir(_DIST):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="DWTRP 后端服务")
+    parser = argparse.ArgumentParser(description="TRPE 后端服务")
     parser.add_argument("--mock", action="store_true", help="离线模式，不调用真实 LLM")
     parser.add_argument("--host", default=CONFIG["SERVER_HOST"])
     parser.add_argument("--port", type=int, default=CONFIG["SERVER_PORT"])

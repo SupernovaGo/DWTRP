@@ -9,7 +9,7 @@
   </style>
   <rect x="0" y="0" width="1440" height="1760" fill="#ffffff"/>
 
-  <text x="720" y="62" text-anchor="middle" class="title">DWTRP · 动态世界文字角色扮演引擎 架构</text>
+  <text x="720" y="62" text-anchor="middle" class="title">TRPE · 动态世界文字角色扮演引擎 架构</text>
 
   <!-- 用户 -->
   <rect x="520" y="110" width="400" height="76" rx="14" fill="#e8f1fd" stroke="#3b82f6" stroke-width="2.5"/>

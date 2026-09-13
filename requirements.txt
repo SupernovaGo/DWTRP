@@ -1,4 +1,4 @@
-# DWTRP required dependencies (backend + BM25 keyword retrieval).
+# TRPE required dependencies (backend + BM25 keyword retrieval).
 # Requires Python >= 3.11. Install with: python -m pip install -r requirements.txt
 # Optional (vector retrieval, large download): requirements-embedding.txt
 #

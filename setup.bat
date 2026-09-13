@@ -11,7 +11,7 @@ set "ROOT=%CD%"
 set "PY="
 
 rem 准备环境用“全新”的 Python（.venv 由脚本自己创建）
-if defined DWTRP_BOOTSTRAP_PYTHON if exist "%DWTRP_BOOTSTRAP_PYTHON%" set "PY=%DWTRP_BOOTSTRAP_PYTHON%"
+if defined TRPE_BOOTSTRAP_PYTHON if exist "%TRPE_BOOTSTRAP_PYTHON%" set "PY=%TRPE_BOOTSTRAP_PYTHON%"
 if not defined PY for /f "delims=" %%i in ('py -3 -c "import sys;print(sys.executable)" 2^>nul') do set "PY=%%i"
 if not defined PY for /f "delims=" %%i in ('python -c "import sys;print(sys.executable)" 2^>nul') do set "PY=%%i"
 if not defined PY if exist "%ROOT%\.venv\Scripts\python.exe" set "PY=%ROOT%\.venv\Scripts\python.exe"

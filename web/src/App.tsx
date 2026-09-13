@@ -38,7 +38,7 @@ function SessionLanding({ onNew }: { onNew: () => void }) {
   return (
     <div className="flex h-full flex-col items-center justify-center p-6 text-center">
       <div className="text-7xl">✨</div>
-      <h1 className="mt-5 text-2xl font-semibold">DWTRP</h1>
+      <h1 className="mt-5 text-2xl font-semibold">TRPE</h1>
       <p className="mt-3 max-w-md text-base text-muted-foreground">
         从一个已有会话继续，或新建一个会话开始。
       </p>
@@ -96,7 +96,7 @@ export default function App() {
       <header className="sticky top-0 z-40 flex min-h-14 shrink-0 flex-col border-b border-border/60 bg-background/70 backdrop-blur">
         <div className="flex h-14 shrink-0 items-center gap-2 px-3 md:px-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-500 text-lg">✨</div>
-          <span className="text-sm font-bold tracking-tight md:text-base">DWTRP</span>
+          <span className="text-sm font-bold tracking-tight md:text-base">TRPE</span>
           <nav className="ml-3 hidden items-center gap-1.5 md:flex">
             {TABS.map(([v, label]) => (
               <button key={v} onClick={() => shell.setView(v)}

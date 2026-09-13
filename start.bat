@@ -11,8 +11,8 @@ set "ROOT=%CD%"
 set "PY="
 
 rem ---------- 1. 选择 Python 解释器 ----------
-rem 优先：%DWTRP_PYTHON% > 项目内 .venv > py 启动器 > PATH 里的 python
-if defined DWTRP_PYTHON if exist "%DWTRP_PYTHON%" set "PY=%DWTRP_PYTHON%"
+rem 优先：%TRPE_PYTHON% > 项目内 .venv > py 启动器 > PATH 里的 python
+if defined TRPE_PYTHON if exist "%TRPE_PYTHON%" set "PY=%TRPE_PYTHON%"
 if not defined PY if exist "%ROOT%\.venv\Scripts\python.exe" set "PY=%ROOT%\.venv\Scripts\python.exe"
 if not defined PY for /f "delims=" %%i in ('py -3 -c "import sys;print(sys.executable)" 2^>nul') do set "PY=%%i"
 if not defined PY for /f "delims=" %%i in ('python -c "import sys;print(sys.executable)" 2^>nul') do set "PY=%%i"
@@ -70,7 +70,7 @@ exit /b 0
 echo [ERROR] 未找到可用的 Python。
 echo         请安装 Python 3.11 及以上版本： https://www.python.org/downloads/
 echo         安装后运行 setup.bat 一键准备环境，或手动指定解释器：
-echo             set DWTRP_PYTHON=C:\path\to\python.exe
+echo             set TRPE_PYTHON=C:\path\to\python.exe
 pause
 exit /b 1
 
