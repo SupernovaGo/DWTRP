@@ -1,0 +1,30 @@
+{
+  "name": "Example World",
+  "overview": "世界背景概述。这段文字会被持久插入到 prompt 中，应涵盖世界观、年代、主要势力与核心矛盾。",
+  "entries": [
+    {
+      "name": "Entry Name",
+      "keywords": ["关键词1", "同义词2"],
+      "importance": 80,
+      "info": "该设定的详细描述。当玩家输入命中 keywords 时，这段文字会被插入 prompt。importance 为 0~100，世界观/重要历史给高分，冷知识给低分。"
+    }
+  ],
+  "locations": [
+    {
+      "name": "一级地点（城市/国家等）",
+      "description": "该一级地点的简要描述",
+      "children": [
+        {
+          "name": "二级地点（街道/区等）",
+          "description": "该二级地点的简要描述",
+          "children": [
+            {
+              "name": "三级地点（具体建筑/房间等）",
+              "description": "该三级地点的简要描述"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,2 +1,13 @@
-# Auto detect text files and perform LF normalization
+# 自动识别文本文件并做换行规范化
 * text=auto
+
+# Windows 批处理必须是 CRLF，否则 cmd.exe 解析多行 if/for 会出错
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Shell 脚本必须是 LF
+*.sh text eol=lf
+
+# 图片按二进制处理
+*.png binary
+*.svg text eol=lf

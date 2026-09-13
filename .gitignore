@@ -1,0 +1,27 @@
+# ---------- 密钥（绝不入库）----------
+server/.env
+.env
+
+# ---------- 运行时数据（每个用户自己的会话/记忆/日志）----------
+server/data/sessions/
+server/data/logs/
+server/data/state/
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---------- Node ----------
+web/node_modules/
+web/.vite/
+
+# ---------- 编辑器 / 系统 ----------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.log

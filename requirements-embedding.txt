@@ -1,0 +1,12 @@
+# DWTRP optional dependencies: vector (semantic) retrieval.
+# Without them, memory retrieval automatically falls back to BM25 keywords.
+# Large download (hundreds of MB to a few GB). Install either from
+# "Settings -> Runtime environment" in the UI, or manually:
+#   python -m pip install -r requirements-embedding.txt
+# CUDA build of torch (NVIDIA GPU acceleration, optional):
+#   python -m pip install --index-url https://download.pytorch.org/whl/cu129 torch
+#
+# NOTE: keep this file ASCII-only (pip reads it with the OS locale encoding).
+
+torch>=2.2                     # inference backend (CPU build is enough)
+sentence-transformers>=3.0    # loads bge-base-zh-v1.5 and similar models

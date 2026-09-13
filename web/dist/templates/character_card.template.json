@@ -1,0 +1,28 @@
+{
+  "id": "character_english_id",
+  "name": "角色名（显示用，例如：Shiroko）",
+  "surname": "角色姓（可选，用于显示完整姓名）",
+  "intro": "角色在故事中的简介/身份，例如：xx学园·xx社团成员",
+  "personality": "角色的性格描述，例如：沉默寡言但行动力强",
+  "appearance": "默认外观描述，例如：浅蓝色长发、赤瞳",
+  "tags": ["标签1", "标签2"],
+  "is_core": false,
+  "aliases": ["别名1", "别名2"],
+  "avatar": "",
+  "speech_style": {
+    "description": "角色说话的语气、用词特点，例如：简短、以「嗯」开头",
+    "examples": ["示例台词1", "示例台词2"]
+  },
+  "relationships": [
+    {
+      "target": "对方角色名",
+      "address": "对对方的称呼，例如：小绿、老师",
+      "relation": "关系词，例如：姐姐、同学、伙伴",
+      "detail": "一段话详细说明该角色对对方的关系",
+      "affection": 0.5,
+      "directed": false
+    }
+  ],
+  "affiliation": "可选自定义字段，会发送给模型，例如：xx学园",
+  "common_behaviors": "可选自定义字段，例如：喜欢晨跑、爱喝碳酸饮料"
+}

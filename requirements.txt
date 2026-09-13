@@ -1,0 +1,18 @@
+# DWTRP required dependencies (backend + BM25 keyword retrieval).
+# Requires Python >= 3.11. Install with: python -m pip install -r requirements.txt
+# Optional (vector retrieval, large download): requirements-embedding.txt
+#
+# NOTE: keep this file ASCII-only. pip reads requirement files with the OS locale
+# encoding (cp936 on Chinese Windows), so non-ASCII comments can break the install.
+
+fastapi>=0.115,<1.0            # Web framework (JSON + SSE endpoints)
+uvicorn[standard]>=0.30,<1.0   # ASGI server
+pydantic>=2.7,<3.0             # request validation (fastapi dependency, pinned range)
+tomli-w>=1.0,<2.0              # write config.toml back from the settings UI
+python-dotenv>=1.0,<2.0        # load DEEPSEEK_API_KEY from server/.env
+requests>=2.31,<3.0            # call DeepSeek Chat Completions
+numpy>=1.26,<3.0               # vector math (also used by BM25 scoring)
+jieba>=0.42,<1.0               # Chinese tokenizer (BM25 recall)
+rank-bm25>=0.2.2,<1.0          # BM25 keyword retrieval
+tzdata>=2024.1                 # timezone database: Windows has no system tzdata,
+                               # and zoneinfo (world clock) requires it

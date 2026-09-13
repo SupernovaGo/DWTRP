@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1760" viewBox="0 0 1440 1760">
+  <style>
+    text { font-family: "Segoe UI", "Microsoft YaHei", "PingFang SC", sans-serif; fill: #1f2430; }
+    .title { font-size: 40px; font-weight: 700; }
+    .box-title { font-size: 22px; font-weight: 600; }
+    .box-sub { font-size: 17px; }
+    .label { font-size: 15px; fill: #5b6472; }
+    .dash { stroke-dasharray: 8 6; }
+  </style>
+  <rect x="0" y="0" width="1440" height="1760" fill="#ffffff"/>
+
+  <text x="720" y="62" text-anchor="middle" class="title">DWTRP · 动态世界文字角色扮演引擎 架构</text>
+
+  <!-- 用户 -->
+  <rect x="520" y="110" width="400" height="76" rx="14" fill="#e8f1fd" stroke="#3b82f6" stroke-width="2.5"/>
+  <text x="720" y="157" text-anchor="middle" class="box-title">用户（浏览器 / 手机）</text>
+
+  <line x1="720" y1="186" x2="720" y2="238" stroke="#94a3b8" stroke-width="2.5"/>
+  <polygon points="720,248 712,234 728,234" fill="#94a3b8"/>
+  <text x="732" y="220" class="label">HTTP / SSE</text>
+
+  <!-- 前端 -->
+  <rect x="230" y="248" width="980" height="104" rx="14" fill="#e9f7ee" stroke="#22a06b" stroke-width="2.5"/>
+  <text x="720" y="292" text-anchor="middle" class="box-title">前端 SPA（React + Vite + Tailwind + shadcn/ui）</text>
+  <text x="720" y="326" text-anchor="middle" class="box-sub">主界面 · 环境面板 · 世界面板 · 资源库 · 设置 · 日志</text>
+
+  <line x1="720" y1="352" x2="720" y2="404" stroke="#94a3b8" stroke-width="2.5"/>
+  <polygon points="720,414 712,400 728,400" fill="#94a3b8"/>
+  <text x="732" y="386" class="label">fetch / SSE　/api/chat/stream …</text>
+
+  <!-- 接口层 -->
+  <rect x="230" y="414" width="980" height="104" rx="14" fill="#fdf3e2" stroke="#d98a1f" stroke-width="2.5"/>
+  <text x="720" y="458" text-anchor="middle" class="box-title">FastAPI 后端接口层（server/main.py）</text>
+  <text x="720" y="492" text-anchor="middle" class="box-sub">会话 · 角色 · 记忆 · 配置 · 日志 · 运行环境 · SSE 事件流</text>
+
+  <line x1="720" y1="518" x2="720" y2="570" stroke="#94a3b8" stroke-width="2.5"/>
+  <polygon points="720,580 712,566 728,566" fill="#94a3b8"/>
+  <text x="732" y="552" class="label">接口调用</text>
+
+  <!-- 世界引擎 -->
+  <rect x="230" y="580" width="980" height="128" rx="14" fill="#f1ecfd" stroke="#7c5cd6" stroke-width="2.5"/>
+  <text x="720" y="622" text-anchor="middle" class="box-title">世界引擎（server/sessions.py · world_session.py）</text>
+  <text x="720" y="656" text-anchor="middle" class="box-sub">SessionManager：会话索引 + 资源库复制　→　WorldSession：每会话循环</text>
+  <text x="720" y="686" text-anchor="middle" class="box-sub">（环境感知 · 时间线 · 世界书副本 · 记忆 · 存档点）</text>
+
+  <line x1="720" y1="708" x2="720" y2="752" stroke="#94a3b8" stroke-width="2.5"/>
+  <polygon points="720,762 712,748 728,748" fill="#94a3b8"/>
+  <text x="732" y="738" class="label">按回合编排</text>
+
+  <!-- Agent 编排层 -->
+  <rect x="230" y="762" width="980" height="80" rx="14" fill="#fdeef3" stroke="#d6456f" stroke-width="2.5"/>
+  <text x="720" y="810" text-anchor="middle" class="box-title">Agent 编排层（server/agents/core.py）</text>
+
+  <!-- 六个 Agent -->
+  <g>
+    <rect x="230" y="876" width="150" height="112" rx="12" fill="#fdeef3" stroke="#d6456f" stroke-width="2.5"/>
+    <text x="305" y="922" text-anchor="middle" class="box-title">玩家</text>
+    <text x="305" y="952" text-anchor="middle" class="box-title">Agent</text>
+
+    <rect x="396" y="876" width="150" height="112" rx="12" fill="#fdeef3" stroke="#d6456f" stroke-width="2.5"/>
+    <text x="471" y="912" text-anchor="middle" class="box-title">可观测环境</text>
+    <text x="471" y="944" text-anchor="middle" class="box-title">Agent</text>
+
+    <rect x="562" y="876" width="150" height="112" rx="12" fill="#fdeef3" stroke="#d6456f" stroke-width="2.5"/>
+    <text x="637" y="912" text-anchor="middle" class="box-title">角色前台</text>
+    <text x="637" y="944" text-anchor="middle" class="box-title">Agent</text>
+
+    <rect x="728" y="876" width="150" height="112" rx="12" fill="#fdeef3" stroke="#d6456f" stroke-width="2.5"/>
+    <text x="803" y="912" text-anchor="middle" class="box-title">角色记忆</text>
+    <text x="803" y="944" text-anchor="middle" class="box-title">Agent</text>
+
+    <rect x="894" y="876" width="150" height="112" rx="12" fill="#fdeef3" stroke="#d6456f" stroke-width="2.5"/>
+    <text x="969" y="912" text-anchor="middle" class="box-title">角色规划</text>
+    <text x="969" y="944" text-anchor="middle" class="box-title">Agent</text>
+
+    <rect x="1060" y="876" width="150" height="112" rx="12" fill="#fdeef3" stroke="#d6456f" stroke-width="2.5"/>
+    <text x="1135" y="912" text-anchor="middle" class="box-title">世界更新</text>
+    <text x="1135" y="944" text-anchor="middle" class="box-title">Agent</text>
+  </g>
+
+  <!-- 总线 -->
+  <g stroke="#94a3b8" stroke-width="2">
+    <line x1="305" y1="988" x2="305" y2="1032"/>
+    <line x1="471" y1="988" x2="471" y2="1032"/>
+    <line x1="637" y1="988" x2="637" y2="1032"/>
+    <line x1="803" y1="988" x2="803" y2="1032"/>
+    <line x1="969" y1="988" x2="969" y2="1032"/>
+    <line x1="1135" y1="988" x2="1135" y2="1032"/>
+    <line x1="305" y1="1032" x2="1135" y2="1032" stroke-width="2.5"/>
+  </g>
+  <text x="470" y="1058" class="label">检索 / 调用 / 写入</text>
+  <g stroke="#94a3b8" stroke-width="2.5">
+    <line x1="386" y1="1032" x2="386" y2="1108"/>
+    <polygon points="386,1118 378,1104 394,1104" fill="#94a3b8" stroke="none"/>
+    <line x1="720" y1="1032" x2="720" y2="1108"/>
+    <polygon points="720,1118 712,1104 728,1104" fill="#94a3b8" stroke="none"/>
+    <line x1="1053" y1="1032" x2="1053" y2="1108"/>
+    <polygon points="1053,1118 1045,1104 1061,1104" fill="#94a3b8" stroke="none"/>
+  </g>
+
+  <!-- 服务层 -->
+  <rect x="230" y="1118" width="313" height="152" rx="14" fill="#e6f6f8" stroke="#1f9aa8" stroke-width="2.5"/>
+  <text x="386" y="1158" text-anchor="middle" class="box-title">LLMClient</text>
+  <text x="386" y="1188" text-anchor="middle" class="box-sub">llm_client.py</text>
+  <text x="386" y="1218" text-anchor="middle" class="box-sub">DeepSeek Chat Completions</text>
+  <text x="386" y="1248" text-anchor="middle" class="box-sub">JSON 解析 · 重试 · 空返回处理</text>
+
+  <rect x="563" y="1118" width="313" height="152" rx="14" fill="#e6f6f8" stroke="#1f9aa8" stroke-width="2.5"/>
+  <text x="719" y="1158" text-anchor="middle" class="box-title">记忆系统 memory.py</text>
+  <text x="719" y="1188" text-anchor="middle" class="box-sub">近期记忆 → 事件（长期记忆）</text>
+  <text x="719" y="1218" text-anchor="middle" class="box-sub">BM25 关键词 + 本地向量文件</text>
+  <text x="719" y="1248" text-anchor="middle" class="box-sub">重要度 · 时效性 · 遗忘</text>
+
+  <rect x="896" y="1118" width="314" height="152" rx="14" fill="#e6f6f8" stroke="#1f9aa8" stroke-width="2.5"/>
+  <text x="1053" y="1158" text-anchor="middle" class="box-title">世界状态与世界书</text>
+  <text x="1053" y="1188" text-anchor="middle" class="box-sub">world_state.py</text>
+  <text x="1053" y="1218" text-anchor="middle" class="box-sub">环境感知 · 时间线</text>
+  <text x="1053" y="1248" text-anchor="middle" class="box-sub">地点树 · 世界书 · 摘要</text>
+
+  <g stroke="#94a3b8" stroke-width="2.5">
+    <line x1="386" y1="1270" x2="386" y2="1388"/>
+    <polygon points="386,1398 378,1384 394,1384" fill="#94a3b8" stroke="none"/>
+    <line x1="720" y1="1270" x2="720" y2="1388"/>
+    <polygon points="720,1398 712,1384 728,1384" fill="#94a3b8" stroke="none"/>
+    <line x1="1053" y1="1270" x2="1053" y2="1388"/>
+    <polygon points="1053,1398 1045,1384 1061,1384" fill="#94a3b8" stroke="none"/>
+  </g>
+
+  <!-- 存储 -->
+  <rect x="230" y="1398" width="313" height="128" rx="14" fill="#eef1f5" stroke="#64748b" stroke-width="2.5"/>
+  <text x="386" y="1440" text-anchor="middle" class="box-title">资源库（data/）</text>
+  <text x="386" y="1474" text-anchor="middle" class="box-sub">worldbooks · characters</text>
+  <text x="386" y="1504" text-anchor="middle" class="box-sub">identities</text>
+
+  <rect x="563" y="1398" width="313" height="128" rx="14" fill="#eef1f5" stroke="#64748b" stroke-width="2.5"/>
+  <text x="719" y="1440" text-anchor="middle" class="box-title">会话副本 data/sessions/&lt;id&gt;/</text>
+  <text x="719" y="1474" text-anchor="middle" class="box-sub">worldbooks · characters · 身份</text>
+  <text x="719" y="1504" text-anchor="middle" class="box-sub">状态 · 记忆 · 时间线</text>
+
+  <rect x="896" y="1398" width="314" height="128" rx="14" fill="#eef1f5" stroke="#64748b" stroke-width="2.5"/>
+  <text x="1053" y="1440" text-anchor="middle" class="box-title">运行日志 data/logs/</text>
+  <text x="1053" y="1474" text-anchor="middle" class="box-sub">llm_*.jsonl（提示词与返回）</text>
+  <text x="1053" y="1504" text-anchor="middle" class="box-sub">events_*.jsonl（运行事件）</text>
+
+  <!-- 可选组件 -->
+  <rect x="230" y="1572" width="980" height="132" rx="14" fill="#fffaf0" stroke="#d98a1f" stroke-width="2.5" class="dash"/>
+  <text x="720" y="1612" text-anchor="middle" class="box-title">可选组件（默认不安装、不随仓库分发）</text>
+  <text x="720" y="1648" text-anchor="middle" class="box-sub">torch + sentence-transformers + 嵌入模型 BAAI/bge-base-zh-v1.5</text>
+  <text x="720" y="1680" text-anchor="middle" class="box-sub">未安装时记忆检索自动退回 BM25 关键词匹配；可在「设置 → 运行环境」中随时安装 / 下载</text>
+</svg>

@@ -1,0 +1,185 @@
+[paths]
+data_dir = "data"
+worldbook_file = "worldbook.json"
+user_identity_file = "user_identity.json"
+core_characters_dir = "core_characters"
+general_characters_file = "general_characters.json"
+state_dir = "state"
+world_state_file = "world_state.json"
+timeline_file = "timeline.json"
+player_perception_file = "player_perception.json"
+character_states_dir = "character_states"
+memory_dir = "memory"
+
+[world]
+timezone = "Asia/Shanghai"
+start_time = "2026-11-06T08:00:00"
+enable_manual_time_advance = true
+default_advance_minutes = 5
+world_update_time = "12:00"
+character_update_time = "18:00"
+world_first_on_tie = true
+scene_history_limit = 10
+world_summary_max_chars = 2400
+character_summary_max_chars = 800
+player_character_detail = "brief"
+core_only_update = true
+world_entry_depth = 2
+world_entry_max = 4
+
+[embedding]
+# 向量检索是可选能力：enabled=false，或未安装 torch/sentence-transformers、
+# 未下载模型时，记忆检索会自动退回 BM25 关键词匹配。
+enabled = true
+# 默认离线加载（只读本地缓存）。首次下载模型请用设置页的一键下载或
+#   python scripts/fetch_embedding_model.py
+offline = true
+model_name = "BAAI/bge-base-zh-v1.5"
+dim = 768
+
+[env]
+# 「设置 → 运行环境」安装可选依赖（torch / sentence-transformers）时附加的 pip 参数。
+# 例：国内镜像 ["-i", "https://pypi.tuna.tsinghua.edu.cn/simple"]
+# 例：CUDA 版 torch ["--index-url", "https://download.pytorch.org/whl/cu129"]
+pip_args = []
+pip_index_url = ""
+# HuggingFace 镜像（国内下载模型建议 https://hf-mirror.com），留空表示官方源。
+hf_endpoint = ""
+
+[llm]
+api_base = "https://api.deepseek.com/chat/completions"
+api_key_env = "DEEPSEEK_API_KEY"
+request_timeout = 240
+retries = 3
+
+[llm.player]
+model = "deepseek-v4-flash"
+temperature = 0.9
+max_tokens = 65536
+thinking = true
+reasoning_effort = "low"
+
+[llm.frontend]
+model = "deepseek-v4-flash"
+temperature = 0.9
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.environment]
+model = "deepseek-v4-flash"
+temperature = 0.9
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.character_memory]
+model = "deepseek-v4-flash"
+temperature = 1
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.character_plan]
+model = "deepseek-v4-flash"
+temperature = 1
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.world_update]
+model = "deepseek-v4-flash"
+temperature = 1
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.memory_summary]
+model = "deepseek-v4-flash"
+temperature = 1
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.memory_planner]
+model = "deepseek-v4-flash"
+temperature = 1
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.session_init]
+model = "deepseek-v4-flash"
+temperature = 1
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.assist]
+model = "deepseek-v4-flash"
+temperature = 0.6
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[llm.story]
+model = "deepseek-v4-flash"
+temperature = 1
+max_tokens = 65536
+thinking = false
+reasoning_effort = "low"
+
+[server]
+host = "0.0.0.0"
+port = 8000
+cors_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+[memory]
+max_events = 500
+forget_check_every_k_turns = 5
+time_decay = 0.001
+importance_bump = 0.02
+top_events = 5
+max_context_chars = 1024
+working_memory_limit = 4096
+working_memory_keep_chars = 2400
+min_summarize_chars = 400
+working_summarize_ratio = 0.7
+working_summary_mode = "ratio"
+agentic_retrieval = false
+max_retrieval_rounds = 3
+retrieval_candidates = 16
+retrieval_embedding_weight = 0.6
+retrieval_bm25_weight = 0.4
+relevance_weight = 0.6
+importance_weight = 0.2
+recency_weight = 0.4
+
+[frontend]
+thought_visible_by_default = false
+
+[update]
+time = [
+    "12:00",
+    "23:59",
+]
+world_first = true
+batch_size = 10
+max_workers = 8
+notice = true
+enable_manual_update = true
+
+[snapshot]
+max = 3
+rewind_max_turns = 3
+
+[logs]
+retention_days = 3
+
+[session]
+auto_create_default = true
+starter_characters = 8
+starter_worldbooks = 1
