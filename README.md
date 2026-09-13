@@ -4,10 +4,11 @@
 
 *A player-centric, multi-agent collaborative dynamic-world text role-playing engine.*
 
-它不像传统聊天机器人那样只做「一问一答」，而是让多个专门化的 Agent 共同维护一个持续运转的世界：
-角色有各自的记忆与规划，环境会随时间和玩家行为变化，宏观世界在后台自动推进。
+它不像传统聊天机器人那样只做「一问一答」，而是让多个专门化的 Agent 共同维护一个持续运转的世界，角色有各自的记忆与规划，环境会随时间和玩家行为变化，宏观世界在后台自动推进。
 
-![系统架构](docs/architecture.png)
+## 主界面
+
+![主界面](./docs/mainUI.png)
 
 ---
 
@@ -320,7 +321,7 @@ DWTRP/
 
 ---
 
-## 手机 / 平板访问
+## 移动端访问
 
 后端默认监听 `0.0.0.0`。手机与电脑连同一个 Wi-Fi 后，用浏览器打开
 `http://<电脑局域网IP>:8000` 即可（IP 可在「设置 → 个性化 → 📱 手机远程」里直接查看并复制）。
@@ -355,6 +356,8 @@ server/data/logs/events_YYYY-MM-DD.jsonl   # 关键运行事件（非 LLM 调用
 ---
 
 ## 技术栈
+
+![系统架构](./docs/architecture.png)
 
 | 层 | 技术 |
 | --- | --- |
