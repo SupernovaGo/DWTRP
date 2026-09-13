@@ -2,7 +2,7 @@
 单角色长期记忆
 ===========================
 要点：
-  - 事件 = 长期记忆的最小且唯一单位；没有 block，也没有 chunk，不再保存原文/text。
+  - 事件 = 长期记忆的最小且唯一单位
   - 事件摘要的嵌入向量直接存成本地文件：
         state/memory/<character_id>.vec.pkl    {event_id: 向量}
   - 检索 = BM25 关键词 + 嵌入相似度（文件向量算余弦）+ 重要性 + 时效性，再按权重排序。
@@ -196,7 +196,7 @@ class CharacterMemory:
 
     # ---------- 新增记忆：事件 ----------
     def add_events(self, events: list, source: str = "conversation") -> list:
-        """把一批事件（仅摘要+重要度）写入长期记忆，并嵌入向量到 Milvus。"""
+        """把一批事件（仅摘要+重要度）写入长期记忆"""
         return self.add_events_with_time(events, source=source)
 
     def add_events_with_time(self, events: list, source: str = "conversation",
@@ -420,7 +420,7 @@ class CharacterMemory:
         self._vec_checked = True
 
     def search(self, query: str) -> dict:
-        """BM25 + 嵌入相似度 + 重要性 + 时效性，返回 Top 事件摘要（无 chunk）。
+        """BM25 + 嵌入相似度 + 重要性 + 时效性，返回 Top 事件摘要。
 
         嵌入（向量）是可选能力：未安装 torch/sentence-transformers、未下载模型，
         或用户在设置里关闭了向量检索时，这里会自动退回**纯 BM25 关键词检索**，

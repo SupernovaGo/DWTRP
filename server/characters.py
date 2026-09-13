@@ -3,8 +3,6 @@
 ==========================
 - 核心角色：data/core_characters/*.json，一个文件一个角色；
 - 动态状态：state/character_states/<id>.json，与角色卡分离。
-
-字段全部按文件内容动态读取，不写死固定字段。
 """
 import copy
 import json

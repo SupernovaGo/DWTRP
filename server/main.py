@@ -6,7 +6,6 @@ FastAPI 入口：把世界引擎包成 JSON 接口，聊天用 SSE 流式推送�
 
 运行：
   python main.py            # 开发，默认 http://127.0.0.1:8000
-  python main.py --mock     # 离线，不调用真实 LLM
 """
 import argparse
 import asyncio

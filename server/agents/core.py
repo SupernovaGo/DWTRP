@@ -1,10 +1,10 @@
 """
-世界模拟的五个 Agent
+世界模拟的 Agent
 ==================================
   - PlayerAgent            玩家 Agent：维护环境感知、决定调用哪些角色、提供 update_hints
   - EnvironmentAgent       可观测环境 Agent：更新玩家可见环境、给角色/世界更新提供附加信息
   - FrontAgent             角色前台 Agent：生成某角色的思考/动作/说话
-  - CharacterUpdateAgent   角色更新 Agent：时间节点更新角色状态/规划/关系
+  - CharacterUpdateAgent   角色更新 Agent：时间节点更新角色状态/规划/关系，实际上拆分成了记忆更新和规划更新两个Agent
   - WorldUpdateAgent       世界更新 Agent：推进时间线中的宏观世界变化
 """
 import re

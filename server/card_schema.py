@@ -1,24 +1,6 @@
 """
 角色卡 / 世界书标准 schema
 ================================
-数据文件只使用英文键（用户此前用中文只是为了方便理解，落地统一为英文）。
-支持导入/加载的唯一格式：
-
-角色卡：
-  id, name, surname, intro, personality, appearance, tags[], is_core,
-  aliases[], avatar(base64), speech_style{description, examples[]},
-  relationships[{target, address, relation, detail, affection, directed}],
-  以及任意自定义字段。
-
-世界书：
-  name, overview, entries[{name, keywords[], importance(0~100), info}],
-  locations[{name, description, children[{name, description, children[]}]}]
-
-动态状态（会话内）：
-  position, mood, doing, appearance{clothes, description},
-  plan{time_period, location, action}, last_updated
-
-不兼容旧的中文键/旧英文键数据；只按上面标准键读取，供“只能加载标准文件”的要求。
 """
 
 # 角色卡“元字段”：不进入扮演模型
