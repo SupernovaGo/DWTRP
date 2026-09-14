@@ -25,6 +25,7 @@ from pydantic import BaseModel
 from settings import CONFIG, ENV_PATH, api_key_source, ensure_dirs, find_api_key
 from sessions import SessionManager
 from prompts_store import load_prompts, set_prompt
+from i18n import set_language, tr
 import player_identities as identities
 import character_library
 import worldbook_library
@@ -69,6 +70,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def language_middleware(request, call_next):
+    """按前端请求头切换服务端提示语言（X-TRPE-Lang / Accept-Language）。"""
+    lang = request.headers.get("x-trpe-lang") or request.headers.get("accept-language") or ""
+    if lang:
+        set_language(lang)
+    return await call_next(request)
 
 
 # ---------- 工具 ----------
@@ -328,7 +338,7 @@ def reset_session():
     import shutil
     sid = get_manager().active_id()
     if not sid:
-        raise HTTPException(status_code=409, detail="尚无当前会话")
+        raise HTTPException(status_code=409, detail=tr("尚无当前会话"))
     rdir = get_manager().sessions_dir_of(sid)
     if rdir and os.path.isdir(rdir):
         for name in ("world_state.json", "timeline.json", "player_perception.json",
@@ -358,7 +368,7 @@ def rename_session(sid: str, body: RenameBody):
     mgr = get_manager()
     entry = mgr.rename(sid, body.name)
     if not entry:
-        raise HTTPException(status_code=404, detail="会话不存在或名称为空")
+        raise HTTPException(status_code=404, detail=tr("会话不存在或名称为空"))
     return {"ok": True, "session": entry}
 
 
@@ -382,7 +392,7 @@ def create_session(body: SessionCreate):
 def initialize_session(sid: str, body: SessionCreate):
     mgr = get_manager()
     if not mgr.get_session(sid):
-        raise HTTPException(status_code=404, detail="会话不存在")
+        raise HTTPException(status_code=404, detail=tr("会话不存在"))
     return mgr.initialize(sid, body.hint)
 
 
@@ -394,7 +404,7 @@ class StartBody(BaseModel):
 def start_session(sid: str, body: StartBody):
     mgr = get_manager()
     if not mgr.get_session(sid):
-        raise HTTPException(status_code=404, detail="会话不存在")
+        raise HTTPException(status_code=404, detail=tr("会话不存在"))
     return mgr.start(sid, body.init)
 
 
@@ -402,7 +412,7 @@ def start_session(sid: str, body: StartBody):
 def switch_session(sid: str):
     mgr = get_manager()
     if not mgr.get_session(sid):
-        raise HTTPException(status_code=404, detail="会话不存在")
+        raise HTTPException(status_code=404, detail=tr("会话不存在"))
     mgr.set_active(sid)
     return {"ok": True, "state": get_session().snapshot_state()}
 
@@ -412,7 +422,7 @@ def delete_session(sid: str):
     mgr = get_manager()
     ok = mgr.delete(sid)
     if not ok:
-        raise HTTPException(status_code=400, detail="默认会话不可删")
+        raise HTTPException(status_code=400, detail=tr("默认会话不可删"))
     return {"ok": True, "state": get_session().snapshot_state()}
 
 
@@ -426,7 +436,7 @@ class HistoryEdit(BaseModel):
 def edit_history(index: int, body: HistoryEdit):
     session = get_session()
     if index < 0 or index >= len(session.scene_history):
-        raise HTTPException(status_code=404, detail="历史条目不存在")
+        raise HTTPException(status_code=404, detail=tr("历史条目不存在"))
     session.scene_history[index] = body.text
     # 编辑玩家消息后同步重写快照：让重写遵循编辑后的内容。
     close = body.text.find("]")
@@ -441,7 +451,7 @@ def edit_history(index: int, body: HistoryEdit):
 def delete_history(index: int):
     session = get_session()
     if index < 0 or index >= len(session.scene_history):
-        raise HTTPException(status_code=404, detail="历史条目不存在")
+        raise HTTPException(status_code=404, detail=tr("历史条目不存在"))
     session.scene_history.pop(index)
     session.rebuild_structured_from_scene()
     session._save_meta()
@@ -457,7 +467,7 @@ def branch_history(body: BranchBody):
     session = get_session()
     idx = body.index
     if idx < 0 or idx >= len(session.scene_history):
-        raise HTTPException(status_code=404, detail="历史条目不存在")
+        raise HTTPException(status_code=404, detail=tr("历史条目不存在"))
     # 优先用最近的存档点回溯全部数据（世界/角色/记忆），否则仅裁剪历史。
     best = None
     for s in session.list_snapshots():
@@ -518,7 +528,7 @@ class HistorySnapshotBody(BaseModel):
 def create_snapshot_from_history(body: HistorySnapshotBody):
     session = get_session()
     if body.index < 0 or body.index >= len(session.scene_history):
-        raise HTTPException(status_code=404, detail="历史条目不存在")
+        raise HTTPException(status_code=404, detail=tr("历史条目不存在"))
     s = session.save_snapshot(label=body.label.strip() or f"从第 {body.index + 1} 条保存的存档", auto=False, scene_cut=body.index)
     return {"ok": True, "snapshot": s}
 
@@ -527,7 +537,7 @@ def create_snapshot_from_history(body: HistorySnapshotBody):
 def delete_snapshot(snap_id: str):
     ok = get_session().delete_snapshot(snap_id)
     if not ok:
-        raise HTTPException(status_code=404, detail="存档点不存在")
+        raise HTTPException(status_code=404, detail=tr("存档点不存在"))
     return {"ok": True, "snapshots": get_session().list_snapshots()}
 
 
@@ -536,7 +546,7 @@ def load_snapshot(snap_id: str):
     mgr = get_manager()
     entry = mgr.load_snapshot(snap_id)
     if not entry:
-        raise HTTPException(status_code=404, detail="存档点不存在")
+        raise HTTPException(status_code=404, detail=tr("存档点不存在"))
     return {"ok": True, "session": entry, "state": get_session().snapshot_state()}
 
 
@@ -545,7 +555,7 @@ def export_snapshot(snap_id: str):
     session = get_session()
     path = session.get_snapshot_path(snap_id)
     if not path:
-        raise HTTPException(status_code=404, detail="存档点不存在")
+        raise HTTPException(status_code=404, detail=tr("存档点不存在"))
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
@@ -578,7 +588,7 @@ def add_directive(body: DirectiveBody):
     session = get_session()
     item = {"text": body.text.strip(), "start": body.start.strip(), "end": body.end.strip()}
     if not item["text"]:
-        raise HTTPException(status_code=400, detail="指令内容不能为空")
+        raise HTTPException(status_code=400, detail=tr("指令内容不能为空"))
     session.world_directives.append(item)
     session._save_meta()
     return {"ok": True, "directives": session.world_directives}
@@ -588,10 +598,10 @@ def add_directive(body: DirectiveBody):
 def edit_directive(index: int, body: DirectiveBody):
     session = get_session()
     if index < 0 or index >= len(session.world_directives):
-        raise HTTPException(status_code=404, detail="指令不存在")
+        raise HTTPException(status_code=404, detail=tr("指令不存在"))
     item = {"text": body.text.strip(), "start": body.start.strip(), "end": body.end.strip()}
     if not item["text"]:
-        raise HTTPException(status_code=400, detail="指令内容不能为空")
+        raise HTTPException(status_code=400, detail=tr("指令内容不能为空"))
     session.world_directives[index] = item
     session._save_meta()
     return {"ok": True, "directives": session.world_directives}
@@ -601,7 +611,7 @@ def edit_directive(index: int, body: DirectiveBody):
 def delete_directive(index: int):
     session = get_session()
     if index < 0 or index >= len(session.world_directives):
-        raise HTTPException(status_code=404, detail="指令不存在")
+        raise HTTPException(status_code=404, detail=tr("指令不存在"))
     session.world_directives.pop(index)
     session._save_meta()
     return {"ok": True, "directives": session.world_directives}
@@ -612,7 +622,7 @@ def delete_directive(index: int):
 def session_worldbooks():
     sid = get_manager().active_id()
     if not sid:
-        raise HTTPException(status_code=409, detail="尚无当前会话")
+        raise HTTPException(status_code=409, detail=tr("尚无当前会话"))
     return {"worldbooks": get_manager().session_worldbooks(sid)}
 
 
@@ -621,7 +631,7 @@ def session_worldbook_get(wid: str):
     sid = get_manager().active_id()
     data = get_manager().get_session_worldbook(sid, wid)
     if data is None:
-        raise HTTPException(status_code=404, detail="世界书不存在")
+        raise HTTPException(status_code=404, detail=tr("世界书不存在"))
     return {"worldbook": data}
 
 
@@ -657,7 +667,7 @@ def list_identities():
 def get_identity(cid: str):
     card = identities.get(cid)
     if card is None:
-        raise HTTPException(status_code=404, detail="身份不存在")
+        raise HTTPException(status_code=404, detail=tr("身份不存在"))
     return {"identity": card}
 
 
@@ -794,14 +804,14 @@ class ShutdownBody(BaseModel):
 def system_shutdown(body: ShutdownBody):
     """请求关闭当前电脑（30 秒倒计时，可取消）。仅 Windows 支持；需 confirm=True。"""
     if not body.confirm:
-        raise HTTPException(status_code=400, detail="需要明确确认关机")
+        raise HTTPException(status_code=400, detail=tr("需要明确确认关机"))
     if mock_enabled():
-        raise HTTPException(status_code=400, detail="mock 模式下不执行真实关机")
+        raise HTTPException(status_code=400, detail=tr("mock 模式下不执行真实关机"))
     if os.name != "nt":
-        raise HTTPException(status_code=400, detail="仅支持 Windows 关机")
+        raise HTTPException(status_code=400, detail=tr("仅支持 Windows 关机"))
     # 防呆：使用系统自带的 shutdown /s，倒计时 30 秒，期间可用 shutdown /a 取消。
     subprocess.Popen(
-        ["shutdown", "/s", "/t", "30", "/c", "AI老婆·世界 将在30秒后关机"],
+        ["shutdown", "/s", "/t", "30", "/c", tr("TRPE 将在30秒后关机")],
         creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
     )
     return {"ok": True, "seconds": 30}
@@ -811,9 +821,9 @@ def system_shutdown(body: ShutdownBody):
 def system_shutdown_cancel():
     """取消正在倒计时的关机。"""
     if os.name != "nt":
-        raise HTTPException(status_code=400, detail="仅支持 Windows")
+        raise HTTPException(status_code=400, detail=tr("仅支持 Windows"))
     subprocess.Popen(["shutdown", "/a"], creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
-    return {"ok": True, "note": "已尝试取消关机"}
+    return {"ok": True, "note": tr("已尝试取消关机")}
 
 
 # ---------- 日志 ----------
@@ -843,7 +853,7 @@ def list_logs():
             if os.path.isfile(p) and name.endswith(".jsonl"):
                 flat.append(_log_file(name, p))
         if flat:
-            sessions.append({"id": "default", "name": "（默认 / 无会话）", "files": flat})
+            sessions.append({"id": "default", "name": tr("（默认 / 无会话）"), "files": flat})
 
         for name in sorted(os.listdir(root)):
             d = os.path.join(root, name)
@@ -865,13 +875,13 @@ def log_content(session: str = "default", name: str = ""):
     from llm_logger import _log_dir
     safe = os.path.basename(name)
     if not safe:
-        raise HTTPException(status_code=400, detail="缺少日志文件名")
+        raise HTTPException(status_code=400, detail=tr("缺少日志文件名"))
     if session == "default":
         p = os.path.join(_log_dir(), safe)
     else:
         p = os.path.join(_log_dir(), os.path.basename(session), safe)
     if not os.path.exists(p):
-        raise HTTPException(status_code=404, detail="日志不存在")
+        raise HTTPException(status_code=404, detail=tr("日志不存在"))
     rows = []
     with open(p, encoding="utf-8") as f:
         for line in f:
@@ -915,7 +925,7 @@ def put_world_summary(body: WorldSummaryBody):
 def put_worldbook(body: dict):
     wb = body.get("worldbook", body)
     _write_json(CONFIG["WORLDBOOK_PATH"], wb)
-    return {"ok": True, "note": "世界书已更新，新建/初始化会话时生效"}
+    return {"ok": True, "note": tr("世界书已更新，新建/初始化会话时生效")}
 
 
 # ---------- 资源库：世界书 ----------
@@ -928,7 +938,7 @@ def library_worldbooks():
 def library_worldbook_get(wid: str):
     data = worldbook_library.get(wid)
     if data is None:
-        raise HTTPException(status_code=404, detail="世界书不存在")
+        raise HTTPException(status_code=404, detail=tr("世界书不存在"))
     return {"worldbook": data}
 
 
@@ -960,7 +970,7 @@ def library_character_tags():
 def library_character_get(cid: str):
     card = character_library.get(cid)
     if card is None:
-        raise HTTPException(status_code=404, detail="角色不存在")
+        raise HTTPException(status_code=404, detail=tr("角色不存在"))
     return {"card": card_schema.normalize_card_avatar(card)}
 
 
@@ -1072,7 +1082,7 @@ def get_character(cid: str):
     session = get_session()
     rec = session.characters.get(cid)
     if not rec:
-        raise HTTPException(status_code=404, detail="角色不存在")
+        raise HTTPException(status_code=404, detail=tr("角色不存在"))
     return {"id": cid,
             "card": card_schema.normalize_card_avatar(rec["card"]),
             "state": rec["state"],
@@ -1088,7 +1098,7 @@ class CharacterUpdate(BaseModel):
 def update_character(cid: str, body: CharacterUpdate):
     session = get_session()
     if not session.characters.get(cid):
-        raise HTTPException(status_code=404, detail="角色不存在")
+        raise HTTPException(status_code=404, detail=tr("角色不存在"))
     if body.card is not None:
         session.characters.update_card(cid, body.card)
     if body.state is not None:
@@ -1103,7 +1113,7 @@ def promote_character(cid: str):
     session = get_session()
     ok = session.characters.promote_to_core(cid)
     if not ok:
-        raise HTTPException(status_code=400, detail="已是核心角色或不存在")
+        raise HTTPException(status_code=400, detail=tr("已是核心角色或不存在"))
     session.characters.save()
     return {"ok": True, "id": cid, "is_core": True}
 
@@ -1117,10 +1127,10 @@ def add_session_character(body: CharacterAdd):
     session = get_session()
     cid = (body.id or "").strip()
     if not cid:
-        raise HTTPException(status_code=400, detail="缺少角色 id")
+        raise HTTPException(status_code=400, detail=tr("缺少角色 id"))
     card = character_library.get(cid)
     if not card:
-        raise HTTPException(status_code=404, detail="资源库中不存在该角色")
+        raise HTTPException(status_code=404, detail=tr("资源库中不存在该角色"))
     added = session.characters.add_from_library(card)
     session.characters.save()
     # 同步会话索引中的角色列表，保证列表计数正确。
@@ -1140,7 +1150,7 @@ def remove_session_character(cid: str):
     session = get_session()
     ok = session.characters.remove(cid)
     if not ok:
-        raise HTTPException(status_code=404, detail="角色不存在")
+        raise HTTPException(status_code=404, detail=tr("角色不存在"))
     session.characters.save()
     session.memory_cache.pop(cid, None)
     if session.session_dir:
@@ -1163,7 +1173,7 @@ def remove_session_character(cid: str):
 def get_memory(cid: str):
     session = get_session()
     if not session.characters.get(cid):
-        raise HTTPException(status_code=404, detail="角色不存在")
+        raise HTTPException(status_code=404, detail=tr("角色不存在"))
     memory = session.get_memory(cid)
     return {
         "character_id": cid,
@@ -1180,7 +1190,7 @@ def delete_memory_event(cid: str, eid: str):
     memory = session.get_memory(cid)
     ok = memory.delete_event(eid)
     if not ok:
-        raise HTTPException(status_code=404, detail="事件不存在")
+        raise HTTPException(status_code=404, detail=tr("事件不存在"))
     return {"ok": True, "stats": memory.stats()}
 
 
@@ -1194,7 +1204,7 @@ class MemoryAdd(BaseModel):
 def add_memory_event(cid: str, body: MemoryAdd):
     session = get_session()
     if not session.characters.get(cid):
-        raise HTTPException(status_code=404, detail="角色不存在")
+        raise HTTPException(status_code=404, detail=tr("角色不存在"))
     memory = session.get_memory(cid)
     try:
         eid = memory.add_manual_event(body.summary, body.text, body.importance)
@@ -1264,7 +1274,7 @@ def update_config(body: dict):
     try:
         _cfg_write(raw)
     except Exception as e:  # noqa: BLE001
-        raise HTTPException(status_code=400, detail=f"配置写入失败：{e}")
+        raise HTTPException(status_code=400, detail=tr("配置写入失败：{err}", err=e))
     # 嵌入开关/模型名/镜像改动后释放共享模型，下次检索按新配置重新加载。
     if isinstance(provided.get("embedding"), dict) or isinstance(provided.get("env"), dict):
         try:
@@ -1272,7 +1282,7 @@ def update_config(body: dict):
             forget_shared_embedder()
         except Exception:  # noqa: BLE001
             pass
-    return {"ok": True, "note": "大部分更改立即生效；监听地址/端口等需重启服务"}
+    return {"ok": True, "note": tr("大部分更改立即生效；监听地址/端口等需重启服务")}
 
 
 _DIST = os.path.normpath(os.path.join(CONFIG["BASE_DIR"], "..", "web", "dist"))
@@ -1283,8 +1293,8 @@ if os.path.isdir(_DIST):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="TRPE 后端服务")
-    parser.add_argument("--mock", action="store_true", help="离线模式，不调用真实 LLM")
+    parser = argparse.ArgumentParser(description=tr("TRPE 后端服务"))
+    parser.add_argument("--mock", action="store_true", help=tr("离线模式，不调用真实 LLM"))
     parser.add_argument("--host", default=CONFIG["SERVER_HOST"])
     parser.add_argument("--port", type=int, default=CONFIG["SERVER_PORT"])
     args = parser.parse_args()

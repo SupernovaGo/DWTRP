@@ -12,6 +12,7 @@ import WorldDirectiveDialog from '@/components/WorldDirectiveDialog'
 import SavepointDialog from '@/components/SavepointDialog'
 import type { FnId } from '@/lib/functions'
 import type { PlayerSegment } from '@/types'
+import { t } from '@/i18n'
 
 export default function FunctionsTab() {
   const toast = useToast()
@@ -32,16 +33,16 @@ export default function FunctionsTab() {
     try {
       const r = await assist(mode)
       if (r.error) {
-        toast.push('AI 生成失败', r.error, 'error')
+        toast.push(t('AI 生成失败'), r.error, 'error')
         return
       }
       useComposer.getState().push({
         text: r.text ?? '',
         segments: (r.segments as PlayerSegment[] | undefined) ?? undefined,
       })
-      toast.push('AI 已替你写了一句', '发送前可修改', 'success')
+      toast.push(t('AI 已替你写了一句'), t('发送前可修改'), 'success')
     } catch (e) {
-      toast.push('AI 生成失败', String(e), 'error')
+      toast.push(t('AI 生成失败'), String(e), 'error')
     } finally {
       setBusy(false)
       useComposer.getState().setAssistBusy(false)
@@ -61,7 +62,7 @@ export default function FunctionsTab() {
 
   const invoke = (id: FnId) => {
     if (!storyAllowed(id)) {
-      toast.push('故事模式下不可用', '仅保留「AI 重写」与「存档点」', 'error')
+      toast.push(t('故事模式下不可用'), t('仅保留「AI 重写」与「存档点」'), 'error')
       return
     }
     switch (id) {
@@ -81,9 +82,9 @@ export default function FunctionsTab() {
   return (
     <div className="flex h-full flex-col overflow-y-auto p-3">
       <div className="mb-2 shrink-0">
-        <h3 className="text-base font-semibold text-violet-700 dark:text-violet-200">🧰 功能</h3>
+        <h3 className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('🧰 功能')}</h3>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          点击卡片即可使用；打开「快捷键」后，它会出现在发送框左侧的工具里。
+          {t('点击卡片即可使用；打开「快捷键」后，它会出现在发送框左侧的工具里。')}
         </p>
       </div>
       <div className="grid grid-cols-2 gap-2.5">
@@ -98,20 +99,20 @@ export default function FunctionsTab() {
               <fn.icon className="mt-0.5 size-5 shrink-0 text-violet-600 dark:text-violet-300" />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-semibold">{fn.label}</span>
+                  <span className="text-sm font-semibold">{t(fn.label)}</span>
                   <Tooltip>
                     <TooltipTrigger render={<Info className="size-3.5 shrink-0 cursor-help text-muted-foreground" />} />
-                    <TooltipContent side="top">{fn.desc}</TooltipContent>
+                    <TooltipContent side="top">{t(fn.desc)}</TooltipContent>
                   </Tooltip>
                 </div>
               </div>
             </button>
             <div className="mt-2 flex items-center justify-between border-t border-border/40 pt-2">
               <span className="text-xs text-muted-foreground">
-                {fn.kind === 'toggle' ? (toggleState(fn.id) ? '已开启' : '已关闭') : '点击使用'}
+                {fn.kind === 'toggle' ? (toggleState(fn.id) ? t('已开启') : t('已关闭')) : t('点击使用')}
               </span>
               <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                快捷键
+                {t('快捷键')}
                 <Switch size="sm" checked={isShortcut(fn.id)} onCheckedChange={() => toggleShortcut(fn.id)} />
               </label>
             </div>

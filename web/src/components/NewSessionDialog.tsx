@@ -25,6 +25,7 @@ import { useToast } from '@/store/toastStore'
 import { useShell } from '@/store/useShell'
 import { weatherEmoji, WEATHER_PRESETS, isPresetWeather, formatCustomTime } from '@/lib/format'
 import { AlertTriangle } from 'lucide-react'
+import { t } from '@/i18n'
 
 type Preview = {
   time?: string
@@ -151,8 +152,8 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
   const initialize = async () => {
     setBusy(true)
     try {
-      if (selWb.size === 0) { toast.push('请至少选择一本世界书', '', 'error'); return }
-      const r = await createSession(name || '新会话', [...selWb], [...selChar], selIdentity, hint)
+      if (selWb.size === 0) { toast.push(t('请至少选择一本世界书'), '', 'error'); return }
+      const r = await createSession(name || t('新会话'), [...selWb], [...selChar], selIdentity, hint)
       setSid(r.session.id)
       const init = await initSession(r.session.id, hint)
       setPreview(init.preview as Preview)
@@ -174,12 +175,12 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
       }).catch(() => setLocTree([]))
       setPhase('preview')
       if (pv.error) {
-        toast.push('开场生成失败', pv.error, 'error')
+        toast.push(t('开场生成失败'), pv.error, 'error')
       } else {
-        toast.push('已生成开场预览', '可修改后确认开始', 'success')
+        toast.push(t('已生成开场预览'), t('可修改后确认开始'), 'success')
       }
     } catch (e) {
-      toast.push('初始化失败', String(e), 'error')
+      toast.push(t('初始化失败'), String(e), 'error')
     } finally {
       setBusy(false)
     }
@@ -191,10 +192,10 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
     try {
       await startSession(sid, preview)
       await app.loadSession()
-      toast.push('会话已开始', '', 'success')
+      toast.push(t('会话已开始'), '', 'success')
       onClose()
     } catch (e) {
-      toast.push('开始失败', String(e), 'error')
+      toast.push(t('开始失败'), String(e), 'error')
     } finally {
       setBusy(false)
     }
@@ -224,10 +225,10 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
       shell.setActiveSession(r.session.id)
       await shell.loadSessions()
       shell.setView('main')
-      toast.push('已从存档文件导入新会话', '可直接继续，无需角色卡或世界书', 'success')
+      toast.push(t('已从存档文件导入新会话'), t('可直接继续，无需角色卡或世界书'), 'success')
       onClose()
     } catch (e) {
-      toast.push('导入失败', '文件不是有效的存档？', 'error')
+      toast.push(t('导入失败'), t('文件不是有效的存档？'), 'error')
     } finally {
       setImporting(false)
     }
@@ -237,26 +238,26 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[92vh] w-[min(97vw,1120px)] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>{phase === 'setup' ? '新建会话' : '开场预览'}</DialogTitle>
+          <DialogTitle>{phase === 'setup' ? t('新建会话') : t('开场预览')}</DialogTitle>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-2">
           {phase === 'setup' && (
             <>
               <div className="flex gap-2">
-                <Input className="h-11 flex-1" placeholder="会话名称（例如：阿拜多斯的一天）" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input className="h-11 flex-1" placeholder={t("会话名称（例如：阿拜多斯的一天）")} value={name} onChange={(e) => setName(e.target.value)} />
                 <Button className="shrink-0" variant="outline" onClick={() => fileRef.current?.click()} disabled={importing}>
-                  {importing ? '导入中…' : '📥 导入存档'}
+                  {importing ? t('导入中…') : t('📥 导入存档')}
                 </Button>
                 <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={onImportFile} />
               </div>
 
               <div>
-                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">① 选择世界书（可多选）</div>
+                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">{t('① 选择世界书（可多选）')}</div>
                 <div className="grid grid-cols-2 gap-2.5">
                   {worldbooks.map((wb) => (
                     <div key={wb.id} className={`cursor-pointer rounded-xl border px-4 py-3 ${selWb.has(wb.id) ? 'border-fuchsia-400/60 bg-primary/10' : 'border-border/60 bg-background/40'}`} onClick={() => toggle(selWb, wb.id, setSelWb)}>
-                      <div className="flex items-start gap-2"><span className="min-w-0 text-base font-semibold leading-snug">{wb.name}</span>{selWb.has(wb.id) && <Badge className="mt-1 text-[11px]">已选</Badge>}</div>
+                      <div className="flex items-start gap-2"><span className="min-w-0 text-base font-semibold leading-snug">{wb.name}</span>{selWb.has(wb.id) && <Badge className="mt-1 text-[11px]">{t('已选')}</Badge>}</div>
                       <div className="mt-1 text-sm leading-snug text-muted-foreground">
                         <span
                           className={expandedWb.has(wb.id) ? '' : 'line-clamp-2'}
@@ -269,7 +270,7 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
                           className="ml-1 text-xs text-violet-600 dark:text-violet-300 hover:underline"
                           onClick={(e) => { e.stopPropagation(); toggleWbExpand(wb.id) }}
                         >
-                          {expandedWb.has(wb.id) ? '收起' : '展开'}
+                          {expandedWb.has(wb.id) ? t('收起') : t('展开')}
                         </button>
                       </div>
                     </div>
@@ -278,7 +279,7 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
               </div>
 
               <div>
-                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">② 玩家身份</div>
+                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">{t('② 玩家身份')}</div>
                 <div className="flex flex-wrap items-center gap-2">
                   {identities.map((it) => (
                     <button key={it.id} onClick={() => setSelIdentity(it.id)}
@@ -287,14 +288,14 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
                     </button>
                   ))}
                   {identities.length === 0 && (
-                    <span className="text-sm text-muted-foreground">暂无可用身份，请先在“资源库 → 身份卡”中创建。</span>
+                    <span className="text-sm text-muted-foreground">{t('暂无可用身份，请先在“资源库 → 身份卡”中创建。')}</span>
                   )}
                 </div>
               </div>
 
               <div>
-                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">③ 选择角色（搜索 / 标签，多选）</div>
-                <Input className="h-10" placeholder="搜索角色…" value={q} onChange={(e) => setQ(e.target.value)} />
+                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">{t('③ 选择角色（搜索 / 标签，多选）')}</div>
+                <Input className="h-10" placeholder={t("搜索角色…")} value={q} onChange={(e) => setQ(e.target.value)} />
                 <div className="mt-2 flex flex-wrap gap-1.5 pb-1">
                   {(showAllTags ? tags : tags.slice(0, 8)).map((t) => (
                     <button key={t} onClick={() => setTag(tag === t ? '' : t)}
@@ -306,21 +307,21 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
                       onClick={() => setShowAllTags((v) => !v)}
                       className="rounded-full border border-dashed border-border px-3 py-1 text-xs text-muted-foreground hover:bg-muted/50"
                     >
-                      {showAllTags ? '收起' : `+${tags.length - 8} 更多`}
+                      {showAllTags ? t('收起') : `+${tags.length - 8}${t(' 更多')}`}
                     </button>
                   )}
                 </div>
                 <div className="mt-2 flex items-center justify-between gap-2">
-                  <div className="text-xs text-muted-foreground">当前显示 {chars.length} 个 · 已选 {selChar.size} 个</div>
+                  <div className="text-xs text-muted-foreground">{t('当前显示 {shown} 个 · 已选 {selected} 个', { shown: chars.length, selected: selChar.size })}</div>
                   <div className="flex gap-1.5">
-                    <Button size="xs" variant="outline" onClick={() => setSelChar(new Set(chars.map((c) => c.id)))}>全选当前结果</Button>
-                    <Button size="xs" variant="ghost" onClick={() => setSelChar(new Set())}>清空已选</Button>
+                    <Button size="xs" variant="outline" onClick={() => setSelChar(new Set(chars.map((c) => c.id)))}>{t('全选当前结果')}</Button>
+                    <Button size="xs" variant="ghost" onClick={() => setSelChar(new Set())}>{t('清空已选')}</Button>
                   </div>
                 </div>
                 <div className="mt-2 grid max-h-64 grid-cols-2 gap-2 overflow-y-auto pr-1">
                   {chars.map((c) => (
                     <div key={c.id} className={`cursor-pointer rounded-xl border px-3 py-2.5 ${selChar.has(c.id) ? 'border-fuchsia-400/60 bg-primary/10' : 'border-border/60 bg-background/40'}`} onClick={() => toggle(selChar, c.id, setSelChar)}>
-                      <div className="flex items-start gap-2"><span className="min-w-0 text-sm font-semibold leading-snug">{c.name}</span>{selChar.has(c.id) && <Badge className="mt-1 text-[11px]">已选</Badge>}</div>
+                      <div className="flex items-start gap-2"><span className="min-w-0 text-sm font-semibold leading-snug">{c.name}</span>{selChar.has(c.id) && <Badge className="mt-1 text-[11px]">{t('已选')}</Badge>}</div>
                       <div className="mt-1 text-xs leading-snug text-muted-foreground">{(c.tags || []).join(' / ')}</div>
                     </div>
                   ))}
@@ -328,12 +329,12 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
               </div>
 
               <div>
-                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">④ 开场提示（会发生什么）</div>
-                <Textarea rows={3} className="text-base" placeholder="例如：在阿拜多斯自治区，遇到正在晨跑的砂狼白子。" value={hint} onChange={(e) => setHint(e.target.value)} />
+                <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-200">{t('④ 开场提示（会发生什么）')}</div>
+                <Textarea rows={3} className="text-base" placeholder={t("例如：在阿拜多斯自治区，遇到正在晨跑的砂狼白子。")} value={hint} onChange={(e) => setHint(e.target.value)} />
               </div>
 
               <Button size="lg" className="w-full" onClick={initialize} disabled={busy}>
-                {busy ? '正在生成开场…' : `✨ 初始化（已选 ${selChar.size} 角色）`}
+                {busy ? t('正在生成开场…') : `${t('✨ 初始化（已选 ')}${selChar.size}${t(' 角色）')}`}
               </Button>
             </>
           )}
@@ -344,7 +345,7 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
                 <div className="rounded-xl border border-amber-500/50 bg-amber-500/10 p-3">
                   <div className="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-200">
                     <AlertTriangle className="size-4 shrink-0" />
-                    开场没能由模型生成
+                    {t('开场没能由模型生成')}
                   </div>
                   <p className="mt-1 break-all whitespace-pre-wrap text-xs text-amber-800/90 dark:text-amber-100/90">
                     {preview.error}
@@ -355,22 +356,22 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
                     className="mt-2 border-amber-500/50 text-amber-800 hover:bg-amber-500/10 dark:text-amber-100"
                     onClick={() => { onClose(); useShell.getState().openSettings('connection') }}
                   >
-                    去设置 API Key
+                    {t('去设置 API Key')}
                   </Button>
                   <p className="mt-2 text-xs text-amber-800/80 dark:text-amber-100/80">
-                    也可以直接手动填写下面的时间 / 地点 / 天气与背景，直接开始（之后补上 Key 仍可正常对话）。
+                    {t('也可以直接手动填写下面的时间 / 地点 / 天气与背景，直接开始（之后补上 Key 仍可正常对话）。')}
                   </p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">天气</span>
+                    <span className="text-sm text-muted-foreground">{t('天气')}</span>
                     <span className="text-xl">{weatherEmoji(preview.weather ?? '')}</span>
                   </div>
                   <div className="flex gap-1 rounded-lg border border-border/60 bg-background/40 p-1">
-                    <Button size="sm" variant={weatherMode === 'preset' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setWeatherMode('preset')}>预设</Button>
-                    <Button size="sm" variant={weatherMode === 'custom' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setWeatherMode('custom')}>自定义</Button>
+                    <Button size="sm" variant={weatherMode === 'preset' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setWeatherMode('preset')}>{t('预设')}</Button>
+                    <Button size="sm" variant={weatherMode === 'custom' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setWeatherMode('custom')}>{t('自定义')}</Button>
                   </div>
                   {weatherMode === 'preset' ? (
                     <div className="flex flex-wrap gap-1.5">
@@ -382,53 +383,53 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
                       ))}
                     </div>
                   ) : (
-                    <Input placeholder="自定义天气（对不上图标则无图标）" value={preview.weather ?? ''} onChange={(e) => patchPreview('weather', e.target.value)} />
+                    <Input placeholder={t("自定义天气（对不上图标则无图标）")} value={preview.weather ?? ''} onChange={(e) => patchPreview('weather', e.target.value)} />
                   )}
                 </div>
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">时间</span>
+                    <span className="text-sm text-muted-foreground">{t('时间')}</span>
                   </div>
                   <div className="flex gap-1 rounded-lg border border-border/60 bg-background/40 p-1">
-                    <Button size="sm" variant={timeMode === 'select' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setTimeMode('select')}>选择</Button>
-                    <Button size="sm" variant={timeMode === 'custom' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setTimeMode('custom')}>自定义</Button>
+                    <Button size="sm" variant={timeMode === 'select' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setTimeMode('select')}>{t('选择')}</Button>
+                    <Button size="sm" variant={timeMode === 'custom' ? 'default' : 'ghost'} className="flex-1 px-2 py-0.5 text-xs" onClick={() => setTimeMode('custom')}>{t('自定义')}</Button>
                   </div>
                   {timeMode === 'select' ? (
                     <Input type="datetime-local" value={(preview.time ?? '').slice(0, 16)} onChange={(e) => { const v = e.target.value; patchPreview('time', v ? (v.length === 16 ? `${v}:00` : v) : '') }} />
                   ) : (
                     <>
-                      <Input placeholder="例如：3023 年、神历 314 年秋、未知…" value={preview.time ?? ''} onChange={(e) => patchPreview('time', e.target.value)} />
+                      <Input placeholder={t("例如：3023 年、神历 314 年秋、未知…")} value={preview.time ?? ''} onChange={(e) => patchPreview('time', e.target.value)} />
                       {formatCustomTime(preview.time ?? '').ok && (
-                        <span className="text-xs text-green-600 dark:text-green-400" title="该时间格式化成功">
-                          ✓ 该时间格式化成功
+                        <span className="text-xs text-green-600 dark:text-green-400" title={t("该时间格式化成功")}>
+                          {t('✓ 该时间格式化成功')}
                         </span>
                       )}
-                      <p className="text-xs text-amber-600 dark:text-amber-400">⚠️ 自定义时间可能无法自动更新。</p>
+                      <p className="text-xs text-amber-600 dark:text-amber-400">{t('⚠️ 自定义时间可能无法自动更新。')}</p>
                     </>
                   )}
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-sm"><span className="text-muted-foreground">地点</span><Input className="mt-1.5" value={preview.location ?? ''} onChange={(e) => patchPreview('location', e.target.value)} /></label>
+                  <label className="block text-sm"><span className="text-muted-foreground">{t('地点')}</span><Input className="mt-1.5" value={preview.location ?? ''} onChange={(e) => patchPreview('location', e.target.value)} /></label>
                   {locTree.length > 0 && (
                     <div className="mt-2 rounded-lg border border-dashed border-border/70 p-2">
                       <button type="button" className="text-xs text-violet-600 dark:text-violet-300 hover:underline" onClick={() => setLocOpen((v) => !v)}>
-                        {locOpen ? '收起' : '从世界书选择地点（可选）'}
+                        {locOpen ? t('收起') : t('从世界书选择地点（可选）')}
                       </button>
                       {locOpen && (
                         <div className="mt-2 grid grid-cols-3 gap-1.5">
                           <select className="h-8 rounded-md border border-border/60 bg-background px-1 text-xs" value={l1}
                             onChange={(e) => { setL1(e.target.value); setL2(''); setL3('') }}>
-                            <option value="">一级</option>
+                            <option value="">{t('一级')}</option>
                             {locTree.map((n) => <option key={n.name} value={n.name}>{n.name}</option>)}
                           </select>
                           <select className="h-8 rounded-md border border-border/60 bg-background px-1 text-xs" value={l2}
                             onChange={(e) => { setL2(e.target.value); setL3('') }} disabled={!locTree.find((n) => n.name === l1)}>
-                            <option value="">二级</option>
+                            <option value="">{t('二级')}</option>
                             {(locTree.find((n) => n.name === l1)?.children ?? []).map((n) => <option key={n.name} value={n.name}>{n.name}</option>)}
                           </select>
                           <select className="h-8 rounded-md border border-border/60 bg-background px-1 text-xs" value={l3}
                             onChange={(e) => setL3(e.target.value)} disabled={!locTree.find((n) => n.name === l1)?.children.find((n) => n.name === l2)}>
-                            <option value="">三级</option>
+                            <option value="">{t('三级')}</option>
                             {((locTree.find((n) => n.name === l1)?.children.find((n) => n.name === l2)?.children) ?? []).map((n) => <option key={n.name} value={n.name}>{n.name}</option>)}
                           </select>
                         </div>
@@ -437,12 +438,12 @@ export default function NewSessionDialog({ open, onClose }: { open: boolean; onC
                   )}
                 </div>
               </div>
-              <label className="block text-sm"><span className="text-muted-foreground">背景</span><Textarea className="mt-1.5" rows={2} value={preview.scene_summary ?? ''} onChange={(e) => patchPreview('scene_summary', e.target.value)} /></label>
-              <label className="block text-sm"><span className="text-muted-foreground">环境细节（每行一条）</span><Textarea className="mt-1.5 font-mono text-sm" rows={3} value={detailText} onFocus={() => setDetailFocused(true)} onBlur={() => setDetailFocused(false)} onChange={(e) => { setDetailText(e.target.value); patchPreview('details', e.target.value.split('\n').map((s) => s.trim()).filter(Boolean)) }} /></label>
-              <div className="rounded-lg border border-border/60 bg-background/40 p-3 text-sm text-muted-foreground">角色初始状态可在开始后在“世界面板 → 角色”中继续调整。</div>
+              <label className="block text-sm"><span className="text-muted-foreground">{t('背景')}</span><Textarea className="mt-1.5" rows={2} value={preview.scene_summary ?? ''} onChange={(e) => patchPreview('scene_summary', e.target.value)} /></label>
+              <label className="block text-sm"><span className="text-muted-foreground">{t('环境细节（每行一条）')}</span><Textarea className="mt-1.5 font-mono text-sm" rows={3} value={detailText} onFocus={() => setDetailFocused(true)} onBlur={() => setDetailFocused(false)} onChange={(e) => { setDetailText(e.target.value); patchPreview('details', e.target.value.split('\n').map((s) => s.trim()).filter(Boolean)) }} /></label>
+              <div className="rounded-lg border border-border/60 bg-background/40 p-3 text-sm text-muted-foreground">{t('角色初始状态可在开始后在“世界面板 → 角色”中继续调整。')}</div>
               <div className="flex gap-2">
-                <Button size="lg" variant="ghost" onClick={() => setPhase('setup')} disabled={busy}>返回修改</Button>
-                <Button size="lg" className="flex-1" onClick={confirmStart} disabled={busy}>{busy ? '开始中…' : '✓ 确认并开始'}</Button>
+                <Button size="lg" variant="ghost" onClick={() => setPhase('setup')} disabled={busy}>{t('返回修改')}</Button>
+                <Button size="lg" className="flex-1" onClick={confirmStart} disabled={busy}>{busy ? t('开始中…') : t('✓ 确认并开始')}</Button>
               </div>
             </div>
           )}

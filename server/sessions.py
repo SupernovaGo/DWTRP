@@ -19,6 +19,7 @@ import shutil
 import time
 
 import card_schema
+from i18n import tr
 from settings import CONFIG, ensure_dirs
 from library_seed import ensure_initialized
 from world_session import WorldSession
@@ -81,7 +82,7 @@ class SessionManager:
         self._copy_identity(sid, "")
         entry = {
             "id": sid,
-            "name": "开始对话",
+            "name": tr("开始对话"),
             "hint": "老师来到了基沃托斯，开始了今天的日常。",
             "worldbooks": wb_ids,
             "characters": char_ids,
@@ -159,7 +160,7 @@ class SessionManager:
     def get_world_session(self, sid: str = None) -> WorldSession:
         sid = sid or self.active_id()
         if not sid or not self.get_session(sid):
-            raise ValueError("尚无当前会话，请先新建或选择会话")
+            raise ValueError(tr("尚无当前会话，请先新建或选择会话"))
         if self._active_world is None or self._active_sid != sid:
             self._active_world = WorldSession(
                 mock=self.mock, session_dir=self.sessions_dir_of(sid))
@@ -184,7 +185,7 @@ class SessionManager:
             _save_json(os.path.join(wbdir, f"{wid}.json"), wb)
         merged = worldbook_library.merge_worldbooks(selected)
         if not merged:
-            merged = {"world": "未配置世界书", "overview": "（尚未选择世界书）"}
+            merged = {"world": tr("未配置世界书"), "overview": tr("（尚未选择世界书）")}
         # 仅用作引擎摘要；查看/编辑仍是各世界书独立副本
         _save_json(os.path.join(sdir, "worldbook.json"), merged)
 
@@ -356,7 +357,7 @@ class SessionManager:
         uident = snap.get("user_identity") or {}
         entry = {
             "id": sid,
-            "name": f"存档·{snap.get('label', '存档')}",
+            "name": tr("存档·{label}", label=snap.get("label", tr("存档"))),
             "hint": "",
             "worldbooks": [],
             "characters": char_ids,

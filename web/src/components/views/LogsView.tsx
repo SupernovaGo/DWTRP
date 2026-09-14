@@ -11,11 +11,12 @@ import {
 } from '@/lib/api'
 import { ChevronDown, ChevronRight, FileText, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { t } from '@/i18n'
 
 function groupFiles(files: LogSessionFile[]) {
   const map = new Map<string, LogSessionFile[]>()
   for (const f of files) {
-    const key = f.date || '未知日期'
+    const key = f.date || t('未知日期')
     if (!map.has(key)) map.set(key, [])
     map.get(key)!.push(f)
   }
@@ -79,7 +80,7 @@ export default function LogsView() {
     const map = new Map<string, { label: string; count: number }>()
     for (const r of rows) {
       const key = String(r.agent || r.kind || 'unknown').toLowerCase()
-      const label = r.agent || `事件·${r.kind || 'unknown'}`
+      const label = r.agent || `${t('事件·')}${r.kind || 'unknown'}`
       const cur = map.get(key)
       map.set(key, { label, count: (cur?.count ?? 0) + 1 })
     }
@@ -105,11 +106,11 @@ export default function LogsView() {
     <div className="grid h-full grid-cols-1 gap-4 p-5 md:grid-cols-[320px_1fr]">
       <div className="min-h-0 space-y-2 overflow-y-auto pr-1">
         <div className="flex items-center justify-between">
-          <span className="text-base font-semibold text-violet-700 dark:text-violet-200">会话日志</span>
-          <Button size="sm" variant="outline" onClick={refresh}>刷新</Button>
+          <span className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('会话日志')}</span>
+          <Button size="sm" variant="outline" onClick={refresh}>{t('刷新')}</Button>
         </div>
-        <Input className="mb-1" placeholder="按文件名筛选…" value={q} onChange={(e) => setQ(e.target.value)} />
-        {filtered.length === 0 && <p className="pt-2 text-sm text-muted-foreground">暂无日志，跑一轮对话后生成。</p>}
+        <Input className="mb-1" placeholder={t("按文件名筛选…")} value={q} onChange={(e) => setQ(e.target.value)} />
+        {filtered.length === 0 && <p className="pt-2 text-sm text-muted-foreground">{t('暂无日志，跑一轮对话后生成。')}</p>}
         {filtered.map((s) => {
           const isOpen = expanded.has(s.id)
           return (
@@ -139,7 +140,7 @@ export default function LogsView() {
                             onClick={() => open(s.id, f.name)}
                           >
                             <FileText className="size-3.5 shrink-0 text-muted-foreground" />
-                            <span className="min-w-0 flex-1 truncate">{f.kind === 'llm' ? `LLM 调用 · ${f.name}` : `运行事件 · ${f.name}`}</span>
+                            <span className="min-w-0 flex-1 truncate">{f.kind === 'llm' ? `${t('LLM 调用 · ')}${f.name}` : `${t('运行事件 · ')}${f.name}`}</span>
                             <span className="shrink-0 text-xs text-muted-foreground">{Math.round(f.size / 1024)}KB</span>
                           </button>
                         )
@@ -154,21 +155,21 @@ export default function LogsView() {
       </div>
 
       <div className="min-h-0 space-y-3 overflow-y-auto">
-        {rows.length === 0 && <p className="pt-6 text-center text-base text-muted-foreground">选择一个会话日志文件查看内容。</p>}
+        {rows.length === 0 && <p className="pt-6 text-center text-base text-muted-foreground">{t('选择一个会话日志文件查看内容。')}</p>}
         {rows.length > 0 && (
           <div className="rounded-lg border border-border/60 bg-background/40 p-3">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <div className="relative flex-1 min-w-52">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input className="pl-8" placeholder="在日志内容中搜索…" value={contentQ} onChange={(e) => setContentQ(e.target.value)} />
+                <Input className="pl-8" placeholder={t("在日志内容中搜索…")} value={contentQ} onChange={(e) => setContentQ(e.target.value)} />
               </div>
-              <span className="text-xs text-muted-foreground">共 {rows.length} 行 / 命中 {filteredRows.length} 行</span>
+              <span className="text-xs text-muted-foreground">{t('共 {total} 行 / 命中 {hit} 行', { total: rows.length, hit: filteredRows.length })}</span>
             </div>
             {sel && !sel.name.includes('llm_') && (
               <p className="mb-2 text-xs text-muted-foreground">
-                运行事件（events_*.jsonl）：记录非 LLM 调用的关键运行事件——如 <code>turn_done</code>、<code>environment</code>、
-                <code>memory_summary</code>、<code>unknown_character</code>、<code>forget</code> 等。
-                用于排查“环境在变但角色不开口”“记忆未生效”等流程问题。
+                {t('运行事件（events_*.jsonl）：记录非 LLM 调用的关键运行事件——如')} <code>turn_done</code>{t('、')}<code>environment</code>{t('、')}
+                <code>memory_summary</code>{t('、')}<code>unknown_character</code>{t('、')}<code>forget</code> {t('等。')}
+                {t('用于排查“环境在变但角色不开口”“记忆未生效”等流程问题。')}
               </p>
             )}
             {filterOptions.length > 1 && (
@@ -177,7 +178,7 @@ export default function LogsView() {
                   className={cn('rounded-full px-3 py-1 text-xs', !filter ? 'bg-fuchsia-500 text-white' : 'bg-muted text-muted-foreground hover:bg-muted/80')}
                   onClick={() => setFilter('')}
                 >
-                  全部
+                  {t('全部')}
                 </button>
                 {filterOptions.map(([key, item]) => (
                   <button
@@ -250,43 +251,43 @@ function AgentLog({ row }: { row: Record<string, any> }) {
         <span className="text-xs text-muted-foreground">#{row.request_id}</span>
         {row.empty && (
           <Badge variant="secondary" className="text-[11px]">
-            {row.empty_kind === 'explicit' ? '明确返回空' : '返回为空'}
+            {row.empty_kind === 'explicit' ? t('明确返回空') : t('返回为空')}
           </Badge>
         )}
         {row.unparseable && (
-          <Badge variant="destructive" className="text-[11px]">解析失败</Badge>
+          <Badge variant="destructive" className="text-[11px]">{t('解析失败')}</Badge>
         )}
         {row.silent && (
-          <Badge variant="secondary" className="text-[11px]">解析为空</Badge>
+          <Badge variant="secondary" className="text-[11px]">{t('解析为空')}</Badge>
         )}
       </button>
       {open && (
         <div className="space-y-2 pl-5">
-          <CollapseSection title="提示词（send）">
+          <CollapseSection title={t("提示词（send）")}>
             <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-3 text-xs leading-relaxed">
               {renderMessages(row.messages)}
             </pre>
           </CollapseSection>
-          <CollapseSection title="原始模型返回（raw）">
+          <CollapseSection title={t("原始模型返回（raw）")}>
             <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-3 text-xs leading-relaxed">
-              {row.raw || '(空)'}
+              {row.raw || t('(空)')}
             </pre>
           </CollapseSection>
           {row.thinking && (
-            <CollapseSection title="模型思考（reasoning_content）">
+            <CollapseSection title={t("模型思考（reasoning_content）")}>
               <pre className="max-h-72 overflow-y-auto whitespace-pre-wrap rounded-lg bg-muted/40 p-3 text-xs leading-relaxed">
                 {row.thinking}
               </pre>
             </CollapseSection>
           )}
           {row.params && (
-            <CollapseSection title="调用参数">
+            <CollapseSection title={t("调用参数")}>
               <div className="rounded-lg bg-muted/40 p-3 text-xs">
                 {typeof row.params === 'object' ? (
                   <dl className="grid grid-cols-2 gap-1">
                     {Object.entries(row.params).map(([k, v]) => (
                       <div key={k} className="flex gap-2">
-                        <dt className="text-muted-foreground">{k}：</dt>
+                        <dt className="text-muted-foreground">{t('{key}：', { key: k })}</dt>
                         <dd className="break-all">{String(v)}</dd>
                       </div>
                     ))}
@@ -295,12 +296,12 @@ function AgentLog({ row }: { row: Record<string, any> }) {
               </div>
             </CollapseSection>
           )}
-          <CollapseSection title="解析结果" defaultOpen>
+          <CollapseSection title={t("解析结果")} defaultOpen>
             <div className="rounded-lg bg-muted/40 p-3 text-xs">
               <ParsedView row={row} />
             </div>
           </CollapseSection>
-          {row.error && <div className="text-xs text-red-600 dark:text-red-400">错误：{row.error}</div>}
+          {row.error && <div className="text-xs text-red-600 dark:text-red-400">{t('错误：')}{row.error}</div>}
         </div>
       )}
     </div>
@@ -309,29 +310,29 @@ function AgentLog({ row }: { row: Record<string, any> }) {
 
 function ParsedView({ row }: { row: Record<string, any> }) {
   const parsed = row.parsed
-  if (!parsed) return <span className="text-muted-foreground">（无）</span>
+  if (!parsed) return <span className="text-muted-foreground">{t('（无）')}</span>
   // 用可读摘要代替一坨 JSON：角色回复展示思考/动作/说话；其余按 agent 简要渲染。
   const lines: string[] = []
-  if (parsed.thought) lines.push(`思考：${parsed.thought}`)
+  if (parsed.thought) lines.push(`${t('思考：')}${parsed.thought}`)
   for (const seg of parsed.sequence ?? []) {
-    const t = typeof seg === 'string' ? seg : (seg?.text ?? '')
-    lines.push(`${seg?.type === 'action' ? '*动作*' : '说话'}：${t}`)
+    const txt = typeof seg === 'string' ? seg : (seg?.text ?? '')
+    lines.push(`${seg?.type === 'action' ? t('*动作*') : t('说话')}${t('：')}${txt}`)
   }
   if (parsed.invoke) {
     for (const inv of parsed.invoke ?? []) {
       const c = typeof inv === 'string' ? inv : inv?.character
-      lines.push(`调用角色：${c || ''}`)
+      lines.push(`${t('调用角色：')}${c || ''}`)
     }
   }
-  if (parsed.updates) lines.push(`角色更新条数：${(parsed.updates ?? []).length}`)
-  if (parsed.changes) lines.push(`世界变化条数：${(parsed.changes ?? []).length}`)
+  if (parsed.updates) lines.push(`${t('角色更新条数：')}${(parsed.updates ?? []).length}`)
+  if (parsed.changes) lines.push(`${t('世界变化条数：')}${(parsed.changes ?? []).length}`)
   if (parsed.environment) {
     const env = parsed.environment
-    if (Array.isArray(env.updates)) lines.push(`环境更新条数：${env.updates.length}`)
-    else lines.push(`环境：${JSON.stringify(env).slice(0, 200)}`)
+    if (Array.isArray(env.updates)) lines.push(`${t('环境更新条数：')}${env.updates.length}`)
+    else lines.push(`${t('环境：')}${JSON.stringify(env).slice(0, 200)}`)
   }
-  if (parsed.events) lines.push(`事件数：${(parsed.events ?? []).length}`)
-  if (parsed.text) lines.push(`建议文本：${parsed.text}`)
+  if (parsed.events) lines.push(`${t('事件数：')}${(parsed.events ?? []).length}`)
+  if (parsed.text) lines.push(`${t('建议文本：')}${parsed.text}`)
   if (!lines.length) lines.push(JSON.stringify(parsed, null, 2))
   return (
     <div className="space-y-1">
@@ -341,32 +342,32 @@ function ParsedView({ row }: { row: Record<string, any> }) {
 }
 
 function renderMessages(messages: any[]): string {
-  if (!Array.isArray(messages)) return '(无)'
-  return messages.map((m) => `${m.role}：\n${m.content}`).join('\n\n----\n\n')
+  if (!Array.isArray(messages)) return t('(无)')
+  return messages.map((m) => `${m.role}${t('：\n')}${m.content}`).join('\n\n----\n\n')
 }
 
 function eventSummary(kind: string, rest: Record<string, any>): string {
   const label: Record<string, string> = {
-    turn_done: '✅ 本回合已完成',
-    environment: '🌐 环境更新',
-    character: '💬 角色回应',
-    character_update: '🔄 已更新角色',
-    world_update: '🌍 世界更新',
-    memory_summary: '💭 整理/总结记忆',
-    forget: '🗑️ 记忆遗忘',
-    processing: '⏳ 处理中',
-    hint: '🔔 系统提示',
+    turn_done: t('✅ 本回合已完成'),
+    environment: t('🌐 环境更新'),
+    character: t('💬 角色回应'),
+    character_update: t('🔄 已更新角色'),
+    world_update: t('🌍 世界更新'),
+    memory_summary: t('💭 整理/总结记忆'),
+    forget: t('🗑️ 记忆遗忘'),
+    processing: t('⏳ 处理中'),
+    hint: t('🔔 系统提示'),
   }
   let s = label[kind] || kind
   if (kind === 'turn_done' && Array.isArray(rest.events)) {
-    s += `；本回合产出事件类型：${rest.events.join(' · ')}`
+    s += `${t('；本回合产出事件类型：')}${rest.events.join(t(' · '))}`
   }
   if (kind === 'character_update' && Array.isArray(rest.updated)) {
-    s += `：${rest.updated.join('、')}`
+    s += `${t('：')}${rest.updated.join(t('、'))}`
   }
-  if (kind === 'character' && rest.name) s += `：${rest.name}`
+  if (kind === 'character' && rest.name) s += `${t('：')}${rest.name}`
   if (kind === 'environment' && Array.isArray(rest.changed)) {
-    s += `；变化字段：${rest.changed.join('、')}`
+    s += `${t('；变化字段：')}${rest.changed.join(t('、'))}`
   }
   return s || kind
 }

@@ -8,6 +8,7 @@ import { Clock, MapPin, Pencil, FastForward } from 'lucide-react'
 import EnvironmentEditDialog from '@/components/EnvironmentEditDialog'
 import { advancePerceptionTime } from '@/lib/api'
 import type { WorldLocation } from '@/types'
+import { t } from '@/i18n'
 
 interface LocNode {
   name: string
@@ -66,7 +67,7 @@ function LocationLabel({ text, locations }: { text: string; locations: WorldLoca
     setOpenIndex(index)
   }
 
-  const segments = canBubble ? chain! : [{ name: text || '未定义', description: '' }]
+  const segments = canBubble ? chain! : [{ name: text || t('未定义'), description: '' }]
 
   return (
     <div className="relative min-w-0" ref={wrapRef}>
@@ -80,7 +81,7 @@ function LocationLabel({ text, locations }: { text: string; locations: WorldLoca
                 type="button"
                 className={`min-w-0 break-words whitespace-normal text-left text-sm font-medium sm:text-base ${clickable ? 'cursor-pointer underline decoration-dotted underline-offset-2 hover:text-violet-600 dark:hover:text-violet-300' : 'cursor-default'}`}
                 onClick={() => toggle(i)}
-                title={clickable ? '点击查看该地点介绍' : undefined}
+                title={clickable ? t('点击查看该地点介绍') : undefined}
               >
                 {node.name}
               </button>
@@ -99,7 +100,7 @@ function LocationLabel({ text, locations }: { text: string; locations: WorldLoca
               type="button"
               className="text-muted-foreground hover:text-foreground"
               onClick={() => setOpenIndex(null)}
-              aria-label="关闭"
+              aria-label={t("关闭")}
             >
               ✕
             </button>
@@ -147,7 +148,7 @@ export default function EnvironmentPanel({ compact = false }: { compact?: boolea
           <span className="text-[11px] text-muted-foreground">{clock.date}</span>
           <span className="ml-auto flex items-center gap-1">
             <span className="text-base">{weatherEmoji(appState.weather)}</span>
-            <span className="text-xs font-medium">{appState.weather || '未知天气'}</span>
+            <span className="text-xs font-medium">{appState.weather ? t(appState.weather) : t('未知天气')}</span>
             {changedFor('weather') && <Badge className="text-[9px]">NEW!</Badge>}
           </span>
         </div>
@@ -179,7 +180,7 @@ export default function EnvironmentPanel({ compact = false }: { compact?: boolea
             ))}
           </ul>
         ) : (
-          <p className="text-[11px] text-muted-foreground">暂无额外信息</p>
+          <p className="text-[11px] text-muted-foreground">{t('暂无额外信息')}</p>
         )}
       </div>
     )
@@ -190,8 +191,8 @@ export default function EnvironmentPanel({ compact = false }: { compact?: boolea
       <Card className="shrink-0 overflow-hidden border-border/60 bg-gradient-to-br from-violet-500/10 via-transparent to-fuchsia-500/10">
         <CardHeader className="pb-1">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold text-violet-700 dark:text-violet-200">🌐 环境面板</CardTitle>
-            <Button size="icon-sm" variant="ghost" className="h-7 w-7 self-center" onClick={() => setEditing(true)} title="编辑环境">
+            <CardTitle className="text-sm font-semibold text-violet-700 dark:text-violet-200">{t('🌐 环境面板')}</CardTitle>
+            <Button size="icon-sm" variant="ghost" className="h-7 w-7 self-center" onClick={() => setEditing(true)} title={t("编辑环境")}>
               <Pencil className="size-3.5" />
             </Button>
           </div>
@@ -203,7 +204,7 @@ export default function EnvironmentPanel({ compact = false }: { compact?: boolea
             <span className="text-xs text-muted-foreground">{clock.date}</span>
             <span className="ml-auto flex items-center gap-1.5">
               <span className="text-lg sm:text-xl">{weatherEmoji(appState.weather)}</span>
-              <span className="text-xs font-medium sm:text-sm">{appState.weather || '未知天气'}</span>
+              <span className="text-xs font-medium sm:text-sm">{appState.weather ? t(appState.weather) : t('未知天气')}</span>
               {changedFor('weather') && <Badge className="text-[10px]">NEW!</Badge>}
             </span>
           </div>
@@ -222,7 +223,7 @@ export default function EnvironmentPanel({ compact = false }: { compact?: boolea
                 useApp.getState().applyState(r.state)
               }}
             >
-              <FastForward className="size-3.5" /> 手动推进时间
+              <FastForward className="size-3.5" /> {t('手动推进时间')}
             </Button>
           )}
         </CardContent>
@@ -231,7 +232,7 @@ export default function EnvironmentPanel({ compact = false }: { compact?: boolea
       <Card className="flex min-h-[160px] flex-1 flex-col border-border/60 bg-background/40">
         <CardHeader className="shrink-0 pb-1">
           <div className="flex items-center justify-between gap-2">
-            <CardTitle className="shrink-0 text-sm font-semibold text-muted-foreground">环境信息</CardTitle>
+            <CardTitle className="shrink-0 text-sm font-semibold text-muted-foreground">{t('环境信息')}</CardTitle>
             {sceneChars.length > 0 && (
               <div className="inline-flex flex-wrap items-center justify-end gap-x-1.5 gap-y-1 rounded-md border border-border/70 bg-background/50 px-2 py-0.5 text-[12px]">
                 {sceneChars.map((c, i) => (
@@ -260,7 +261,7 @@ export default function EnvironmentPanel({ compact = false }: { compact?: boolea
               </li>
             ))}
             {details.length === 0 && (
-              <li className="text-sm text-muted-foreground">暂无额外信息</li>
+              <li className="text-sm text-muted-foreground">{t('暂无额外信息')}</li>
             )}
           </ul>
           </div>

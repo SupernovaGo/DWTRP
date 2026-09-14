@@ -1,66 +1,68 @@
-# 角色卡和世界书标准
+# Character card and worldbook standard
 
-## 对角色卡的完整定义
+**English** | [中文](std_data.zh-CN.md)
 
-在前端页面创建角色卡时，必须字段都必须填，否则无法创建。推荐字段默认折叠，可选填一个或多个；点击下面的加号，可创建并填写自定义字段
+## Character card definition
 
-#### 必须字段
+When you create a character card in the UI, all required fields must be filled in or the card cannot be created. Recommended fields are collapsed by default and are optional; the plus button lets you add your own custom fields.
 
-必须有，文件中没有则无法导入
+#### Required fields
 
-- id（一般可以是名的英文）
-- 名：字符串
-- 简介：字符串
-- 性格：字符串
-- 默认外观：字符串，描述默认情况下角色的外观
-- tags：字符串列表，用于筛选
-- 是否为核心角色：布尔，核心角色的话，角色卡应该更加详细
+These must be present, otherwise the file cannot be imported.
 
-#### 推荐字段
+- `id` (usually the romanised given name)
+- `name`: string
+- `intro`: string
+- `personality`: string
+- `appearance`: string — the character's default look
+- `tags`: list of strings, used for filtering
+- `is_core`: boolean — core characters should have a more detailed card
 
-可以没有，但如果有的话，项目可以成功解析，并在在不同功能里使用它们
+#### Recommended fields
 
-- 姓：对话时，可开关显示名/姓名，字符串
-- 别名：可以有多个，使用别名时，依然可以指向本角色，字符串列表
-- 头像：角色可显示头像。头像因为比较小，因此该字段里可存图片的base64，然后前端解析一下
-- 说话风格：
-  - 描述：字符串
-  - 示例：字符串列表
-- 关系网：可以被前端解析成关系网，可视化
-  - target：目标对象（指向另一个人）
-  - 称呼：比如小绿、亲爱的
-  - 关系：简述，一般几个字，比如姐姐、学生等，用于在关系网上显示
-  - 关系详述：用文本段详细阐述该角色对target的关系
-  - 好感度：0到1的小数
+Optional, but when present the project parses them and uses them in several features.
 
-#### 自定义字段
+- `surname`: string — lets the chat toggle between given name and full name
+- `aliases`: list of strings — any alias still resolves to this character
+- `avatar`: the character's portrait. Because avatars are small, this field may hold the image's base64 data, which the front end decodes for display
+- `speech_style`:
+  - `description`: string
+  - `examples`: list of strings
+- `relationships`: parsed by the UI into a visual relationship graph
+  - `target`: the other character this relationship points to
+  - `address`: how this character addresses them, e.g. Midori, darling
+  - `relation`: a short label shown on the graph, e.g. sister, student
+  - `detail`: a paragraph describing how this character relates to `target`
+  - `affection`: a decimal between 0 and 1
 
-不会被解析，但可以作为信息一起发送给模型，可以自由填写字段，最终直接将整段发送给模型
+#### Custom fields
 
-- 比如隶属机构、常见行为等等
+Custom fields are not parsed, but they are sent to the model as information. You may use any field names; the whole block is passed to the model as-is.
+
+- For example an affiliation, typical behaviour, and so on
 
 
 
-## 对世界书的完整定义
+## Worldbook definition
 
-#### 必须字段
+#### Required fields
 
-- 名称：字符串
-- 简介：字符串，简述世界观，这段文本将持久插入所有agent的prompt
+- `name`: string
+- `overview`: string — a short description of the setting. This text is permanently inserted into every agent's prompt
 
-#### 推荐字段
+#### Recommended fields
 
-其中设定是世界书的主要内容字段，大部分信息都是设定里的，基本等价于sillytavern的Entry字段。若对话中提到了某个关键词，则将信息插入prompt中
+`entries` is the main content of a worldbook: most information lives there, roughly equivalent to SillyTavern's Entry field. When a keyword is mentioned in the conversation, the matching entry is inserted into the prompt.
 
-- 设定：
-  - 关键词：字符串列表（列表是用于处理不同翻译/不同称呼的同一个信息），用于触发世界书设定
-  - 重要程度：0~100的值，像世界观、重要历史等就非常重要，冷知识、普通历史等重要程度低
-  - 信息：字符串，对该设定的详细描述
-- 地点（环境显示时以世界书地点名为准，子地点可由AI根据情况给出，如AI选择了世界书的xx市-xx街道，根据上下文，AI可以选择性补充，比如xx家。最多支持三级地点）：
-  - 一级地点名：字符串
-    - 简要描述：字符串
-    - 子地点：
-      - 二级地点名
-        - 简要描述
-        - 三级地点名
-          - 简要描述
+- `entries`:
+  - `keywords`: list of strings (several spellings/translations of the same information may be listed), used to trigger the entry
+  - `importance`: a value from 0 to 100 — world rules or important history rate high, trivia or minor history rate low
+  - `info`: string, a detailed description of this entry
+- `locations` (the environment panel takes location names from the worldbook; sub-locations may be supplied by the AI — e.g. if the AI picked "XX City > XX Street" from the worldbook, it may optionally add "XX's home" based on the context; up to three levels are supported):
+  - first-level location name: string
+    - `description`: string
+    - `children`:
+      - second-level location name
+        - `description`
+        - third-level location name
+          - `description`

@@ -4,6 +4,7 @@ import { ArrowLeft, Share2 } from 'lucide-react'
 import { getCharacterGraph } from '@/lib/api'
 import type { RelationEdge, RelationGraph } from '@/types'
 import { avatarUrl } from '@/lib/format'
+import { t } from '@/i18n'
 
 interface Props {
   focusName: string
@@ -37,14 +38,14 @@ function DetailPopover({
   onClose: () => void
 }) {
   const lines: string[] = []
-  if (edge?.address) lines.push(`称呼：${edge.address}`)
-  if (edge?.relation) lines.push(`关系：${edge.relation}`)
+  if (edge?.address) lines.push(`${t('称呼：')}${edge.address}`)
+  if (edge?.relation) lines.push(`${t('关系：')}${edge.relation}`)
   if (edge?.affection != null && !Number.isNaN(Number(edge.affection))) {
-    lines.push(`好感度：${Number(edge.affection).toFixed(2)}`)
+    lines.push(`${t('好感度：')}${Number(edge.affection).toFixed(2)}`)
   }
-  if (edge?.directed) lines.push('单向：对方可能并不了解本角色')
-  if (edge?.detail) lines.push(`详述：${edge.detail}`)
-  if (!edge) lines.push('（这是本角色的视角）')
+  if (edge?.directed) lines.push(t('单向：对方可能并不了解本角色'))
+  if (edge?.detail) lines.push(`${t('详述：')}${edge.detail}`)
+  if (!edge) lines.push(t('（这是本角色的视角）'))
   const boxW = 220
   const boxX = Math.min(x - boxW / 2, W - boxW - 8)
   const boxY = Math.max(8, Math.min(y - 140, H - 170))
@@ -114,13 +115,13 @@ export default function RelationsView({ focusName, onBack, onFocus }: Props) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 p-6 text-sm text-muted-foreground">
         <Share2 className="size-8" />
-        <div>加载关系网失败：{error}</div>
-        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="size-4" /> 返回</Button>
+        <div>{t('加载关系网失败：')}{error}</div>
+        <Button variant="outline" size="sm" onClick={onBack}><ArrowLeft className="size-4" /> {t('返回')}</Button>
       </div>
     )
   }
   if (!layout) {
-    return <div className="flex h-full items-center justify-center text-sm text-muted-foreground">正在加载关系网…</div>
+    return <div className="flex h-full items-center justify-center text-sm text-muted-foreground">{t('正在加载关系网…')}</div>
   }
 
   // 点击节点时，找出它与中心/目标之间的一条关系，用于 popover 展示详情
@@ -130,9 +131,9 @@ export default function RelationsView({ focusName, onBack, onFocus }: Props) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex shrink-0 items-center gap-2 border-b border-border/60 px-4 py-2.5">
-        <Button size="sm" variant="ghost" onClick={onBack}><ArrowLeft className="size-4" /> 返回</Button>
-        <h3 className="text-base font-semibold text-violet-700 dark:text-violet-200">🕸️ {focusName} 的关系网</h3>
-        <span className="ml-auto text-[11px] text-muted-foreground">点击节点查看详细关系</span>
+        <Button size="sm" variant="ghost" onClick={onBack}><ArrowLeft className="size-4" /> {t('返回')}</Button>
+        <h3 className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('🕸️ {name} 的关系网', { name: focusName })}</h3>
+        <span className="ml-auto text-[11px] text-muted-foreground">{t('点击节点查看详细关系')}</span>
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
         <svg viewBox={`0 0 ${W} ${H}`} className="h-full w-full">
@@ -222,9 +223,9 @@ export default function RelationsView({ focusName, onBack, onFocus }: Props) {
         </svg>
       </div>
       <div className="shrink-0 border-t border-border/60 px-4 py-2 text-[11px] text-muted-foreground">
-        <span className="mr-3">实线：双向认识</span>
-        <span className="mr-3">虚线+箭头：单向了解</span>
-        <span>点击非中心节点查看对方视角的详细关系。</span>
+        <span className="mr-3">{t('实线：双向认识')}</span>
+        <span className="mr-3">{t('虚线+箭头：单向了解')}</span>
+        <span>{t('点击非中心节点查看对方视角的详细关系。')}</span>
       </div>
     </div>
   )

@@ -23,6 +23,7 @@ import { useComposer } from '@/store/composer'
 import { useShell } from '@/store/useShell'
 import { isApiKeyMissing, useMissingApiKey } from '@/store/apiKeyStore'
 import { fnById, type FnId } from '@/lib/functions'
+import { t } from '@/i18n'
 
 // 「添加一条」只在说/做之间循环；指令（think）需从下拉框手动选择。
 const CYCLE_TYPES = ['speech', 'action'] as const
@@ -128,20 +129,20 @@ export default function ChatInput() {
     try {
       const r = await assist(mode)
       if (r.error) {
-        toast.push('AI 生成失败', r.error, 'error')
+        toast.push(t('AI 生成失败'), r.error, 'error')
         return
       }
       if (!r.text && !((r.segments || []).length)) {
-        toast.push('AI 没有给出建议', '可换个时间或再试一次', 'error')
+        toast.push(t('AI 没有给出建议'), t('可换个时间或再试一次'), 'error')
         return
       }
       applySuggestion({
         text: r.text ?? '',
         segments: (r.segments as PlayerSegment[] | undefined) ?? undefined,
       })
-      toast.push('AI 已替你写了一句', '发送前可再修改', 'success')
+      toast.push(t('AI 已替你写了一句'), t('发送前可再修改'), 'success')
     } catch (e) {
-      toast.push('AI 生成失败', String(e), 'error')
+      toast.push(t('AI 生成失败'), String(e), 'error')
     } finally {
       setAssistBusy(false)
     }
@@ -153,7 +154,7 @@ export default function ChatInput() {
     try {
       await useApp.getState().rewindLast()
     } catch (e) {
-      toast.push('重写失败', String(e), 'error')
+      toast.push(t('重写失败'), String(e), 'error')
     } finally {
       setAssistBusy(false)
     }
@@ -179,7 +180,7 @@ export default function ChatInput() {
     if (!canSend || streaming || assistBusy) return
     // 未配置 API Key：显式提醒并跳到设置，避免“发了没反应”。
     if (isApiKeyMissing()) {
-      toast.push('未配置 API Key', '请先在「设置 → 连接 / 高级」里填写 DeepSeek API Key 后再发送', 'error')
+      toast.push(t('未配置 API Key'), t('请先在「设置 → 连接 / 高级」里填写 DeepSeek API Key 后再发送'), 'error')
       useShell.getState().openSettings('connection')
       return
     }
@@ -253,7 +254,7 @@ export default function ChatInput() {
     >
       <div className="flex w-full flex-col gap-1.5">
         {assistBusy && (
-          <div className="text-center text-xs font-medium text-violet-600 dark:text-violet-300">✨ AI 正在帮你写…</div>
+          <div className="text-center text-xs font-medium text-violet-600 dark:text-violet-300">{t('✨ AI 正在帮你写…')}</div>
         )}
         {missingKey && (
           <button
@@ -262,7 +263,7 @@ export default function ChatInput() {
             className="flex items-center justify-center gap-1.5 rounded-lg border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-500/20 dark:text-amber-200"
           >
             <AlertTriangle className="size-3.5 shrink-0" />
-            未配置 DeepSeek API Key，无法发送 — 点此去设置
+            {t('未配置 DeepSeek API Key，无法发送 — 点此去设置')}
           </button>
         )}
         <div className="flex min-w-0 flex-nowrap items-end gap-1.5 sm:gap-2">
@@ -273,7 +274,7 @@ export default function ChatInput() {
               className={cn('size-9 rounded-full border sm:size-10', toolsOpen ? 'border-fuchsia-400/50 bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-100' : 'border-border/60 text-muted-foreground')}
               onClick={() => setToolsOpen((v) => !v)}
               disabled={assistBusy}
-              title="快捷功能"
+              title={t("快捷功能")}
             >
               <SlidersHorizontal className="size-5" />
             </Button>
@@ -291,7 +292,7 @@ export default function ChatInput() {
                         <label key={id} className="flex items-center justify-between rounded-lg px-1.5 py-1.5 text-sm hover:bg-muted/40">
                           <span className="flex items-center gap-2">
                             <fn.icon className="size-4 text-muted-foreground" />
-                            {fn.label}
+                            {t(fn.label)}
                           </span>
                           <Switch checked={checked} onCheckedChange={onChange} disabled={!storyAllowed(id)} />
                         </label>
@@ -306,7 +307,7 @@ export default function ChatInput() {
                         disabled={streaming || assistBusy || !storyAllowed(id)}
                       >
                         <fn.icon className="size-4 text-muted-foreground" />
-                        {fn.label}
+                        {t(fn.label)}
                       </Button>
                     )
                   })}
@@ -320,7 +321,7 @@ export default function ChatInput() {
             <div className="relative flex min-w-0 flex-1">
               <Textarea
                 className="min-h-[44px] max-h-36 flex-1 resize-none rounded-2xl bg-background/60 px-3 py-2 text-[15px] leading-relaxed sm:px-4 sm:py-2.5 sm:text-base"
-                placeholder="输入剧情指令…（留空则自然推进剧情）"
+                placeholder={t("输入剧情指令…（留空则自然推进剧情）")}
                 rows={1}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -337,7 +338,7 @@ export default function ChatInput() {
                   type="button"
                   onClick={() => app.setStoryMode(false)}
                   className="absolute bottom-1.5 right-1.5 z-10 flex size-7 items-center justify-center rounded-full border border-border/60 bg-background/80 text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-300"
-                  title="切回交互模式"
+                  title={t("切回交互模式")}
                 >
                   <Feather className="size-4" />
                 </button>
@@ -347,7 +348,7 @@ export default function ChatInput() {
             <div className="relative flex min-w-0 flex-1">
               <Textarea
                 className="min-h-[44px] max-h-36 flex-1 resize-none rounded-2xl bg-background/60 px-3 py-2 text-[15px] leading-relaxed sm:px-4 sm:py-2.5 sm:text-base"
-                placeholder="你想做什么…"
+                placeholder={t("你想做什么…")}
                 rows={1}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -364,7 +365,7 @@ export default function ChatInput() {
                   type="button"
                   onClick={() => app.setStoryMode(true)}
                   className="absolute bottom-1.5 right-1.5 z-10 flex size-7 items-center justify-center rounded-full border border-border/60 bg-background/80 text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-300"
-                  title="切到故事模式"
+                  title={t("切到故事模式")}
                 >
                   <Feather className="size-4" />
                 </button>
@@ -387,7 +388,7 @@ export default function ChatInput() {
                         type="button"
                         onClick={() => liftToEdit(i)}
                         className="flex min-w-0 flex-1 items-center gap-1 text-left"
-                        title="点击展开编辑"
+                        title={t("点击展开编辑")}
                       >
                         <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[10px] font-bold">
                           {TYPE_LETTERS[seg.type]}
@@ -398,7 +399,7 @@ export default function ChatInput() {
                         type="button"
                         onClick={() => removeBubble(i)}
                         className="shrink-0 text-current/60 hover:text-current"
-                        title="删除"
+                        title={t("删除")}
                       >
                         <XIcon className="size-3" />
                       </button>
@@ -414,13 +415,13 @@ export default function ChatInput() {
                     </span>
                   </SelectTrigger>
                   <SelectContent align="start">
-                    {SEG_TYPES.map((t) => (
-                      <SelectItem key={t} value={t}>
+                    {SEG_TYPES.map((kind) => (
+                      <SelectItem key={kind} value={kind}>
                         <span className="flex items-center gap-2">
-                          <span className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[10px] font-bold', TYPE_BASE[t])}>
-                            {TYPE_LETTERS[t]}
+                          <span className={cn('flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-current text-[10px] font-bold', TYPE_BASE[kind])}>
+                            {TYPE_LETTERS[kind]}
                           </span>
-                          {SEG_LABELS[t]}
+                          {t(SEG_LABELS[kind])}
                         </span>
                       </SelectItem>
                     ))}
@@ -430,7 +431,7 @@ export default function ChatInput() {
                   <Textarea
                     className="min-h-10 max-h-28 flex-1 resize-none rounded-xl bg-background/60 px-3 py-2 text-[15px] leading-relaxed sm:min-h-11 sm:max-h-32 sm:text-base"
                     rows={1}
-                    placeholder="填入内容…"
+                    placeholder={t("填入内容…")}
                     value={current.text}
                     onChange={(e) => patchCurrent({ text: e.target.value })}
                     disabled={streaming || assistBusy}
@@ -440,14 +441,14 @@ export default function ChatInput() {
                       type="button"
                       onClick={() => app.setStoryMode(!storyMode)}
                       className="absolute bottom-1.5 right-1.5 z-10 flex size-7 items-center justify-center rounded-full border border-border/60 bg-background/80 text-muted-foreground transition-colors hover:text-violet-600 dark:hover:text-violet-300"
-                      title={storyMode ? '切回交互模式' : '切到故事模式'}
+                      title={storyMode ? t('切回交互模式') : t('切到故事模式')}
                     >
                       <Feather className="size-4" />
                     </button>
                   )}
                 </div>
                 <Button size="sm" variant="outline" className="h-10 shrink-0 px-2 sm:h-11 sm:px-3" onClick={addSeg} disabled={streaming || assistBusy}>
-                  ＋<span className="hidden sm:inline"> 添加</span>
+                  {t('＋')}<span className="hidden sm:inline"> {t('添加')}</span>
                 </Button>
               </div>
             </div>
@@ -457,10 +458,10 @@ export default function ChatInput() {
           <Button
             onClick={submit}
             disabled={streaming || assistBusy || !canSend}
-            title="发送"
+            title={t("发送")}
             className="h-10 w-10 shrink-0 rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 sm:h-11 sm:w-11"
           >
-            {streaming || assistBusy ? '……' : <Send className="size-4 sm:size-5" />}
+            {streaming || assistBusy ? t('……') : <Send className="size-4 sm:size-5" />}
           </Button>
         </div>
       </div>

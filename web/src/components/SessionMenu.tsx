@@ -7,6 +7,7 @@ import { useApp } from '@/store/appStore'
 import { useToast } from '@/store/toastStore'
 import { switchSession, deleteSession, renameSession } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { t } from '@/i18n'
 
 export default function SessionMenu({ onNewSession }: { onNewSession: () => void }) {
   const shell = useShell()
@@ -36,13 +37,13 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
       await shell.loadSessions()
       shell.setView('main')
     } catch (e) {
-      toast.push('切换失败', String(e), 'error')
+      toast.push(t('切换失败'), String(e), 'error')
     }
   }
 
   const onDelete = async (id: string) => {
     setOpen(false)
-    if (!window.confirm('确定删除这个会话？此操作不可恢复。')) return
+    if (!window.confirm(t('确定删除这个会话？此操作不可恢复。'))) return
     try {
       await deleteSession(id)
       await shell.loadSessions().then(async (active) => {
@@ -54,9 +55,9 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
           await app.init()
         }
       })
-      toast.push('已删除会话', '', 'success')
+      toast.push(t('已删除会话'), '', 'success')
     } catch (e) {
-      toast.push('删除失败', String(e), 'error')
+      toast.push(t('删除失败'), String(e), 'error')
     }
   }
 
@@ -75,9 +76,9 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
       await renameSession(id, name)
       await shell.loadSessions()
       setRenamingId(null)
-      toast.push('已重命名会话', '', 'success')
+      toast.push(t('已重命名会话'), '', 'success')
     } catch (e) {
-      toast.push('重命名失败', String(e), 'error')
+      toast.push(t('重命名失败'), String(e), 'error')
     }
   }
 
@@ -88,7 +89,7 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
         className="max-w-[7.5rem] justify-between gap-1.5 sm:max-w-[260px]"
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="truncate">{current?.name ?? '选择会话'}</span>
+        <span className="truncate">{current?.name ?? t('选择会话')}</span>
         <ChevronDownIcon className={cn('size-4 text-muted-foreground transition-transform', open && 'rotate-180')} />
       </Button>
 
@@ -96,7 +97,7 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
         <div className="absolute right-0 top-full z-50 mt-1.5 w-[min(18rem,calc(100vw-2.5rem))] overflow-hidden rounded-xl border border-border/60 bg-popover p-1.5 shadow-xl sm:w-80">
           <div className="max-h-[340px] overflow-y-auto">
             {shell.sessions.length === 0 && (
-              <p className="px-3 py-5 text-center text-sm text-muted-foreground">还没有会话，点击“＋ 新建会话”创建。</p>
+              <p className="px-3 py-5 text-center text-sm text-muted-foreground">{t('还没有会话，点击“＋ 新建会话”创建。')}</p>
             )}
             {shell.sessions.map((s) => (
               <div
@@ -121,10 +122,10 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
                     <>
                       <div className="flex items-center gap-1.5">
                         <span className="truncate text-sm font-medium">{s.name}</span>
-                        {s.is_active && <Badge className="text-[10px]">当前</Badge>}
+                        {s.is_active && <Badge className="text-[10px]">{t('当前')}</Badge>}
                       </div>
                       <div className="truncate text-[11px] text-muted-foreground">
-                        {(s as any).characters ?? 0} 角色 · {((s as any).worldbooks ?? []).length} 世界书
+                        {t('{characters} 角色 · {worldbooks} 世界书', { characters: (s as any).characters ?? 0, worldbooks: ((s as any).worldbooks ?? []).length })}
                       </div>
                     </>
                   )}
@@ -138,7 +139,7 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
                       e.stopPropagation()
                       startRename(s.id, s.name)
                     }}
-                    title="重命名会话"
+                    title={t("重命名会话")}
                   >
                     <PencilIcon className="size-4" />
                   </Button>
@@ -151,7 +152,7 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
                         e.stopPropagation()
                         onDelete(s.id)
                       }}
-                      title="删除会话"
+                      title={t("删除会话")}
                     >
                       <Trash2 className="size-4" />
                     </Button>
@@ -163,7 +164,7 @@ export default function SessionMenu({ onNewSession }: { onNewSession: () => void
           <div className="mt-1 border-t border-border/60 pt-1">
             <Button variant="ghost" className="w-full justify-start" onClick={() => { setOpen(false); onNewSession() }}>
               <PlusIcon className="size-4" />
-              新建会话
+              {t('新建会话')}
             </Button>
           </div>
         </div>

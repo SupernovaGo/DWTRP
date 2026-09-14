@@ -21,6 +21,7 @@ import time
 import uuid
 
 import embedding
+from i18n import tr
 from settings import BASE_DIR, CONFIG, read_embedding_config
 
 _ROOT = os.path.dirname(BASE_DIR)
@@ -90,7 +91,7 @@ def current_task() -> dict:
 def _begin(kind: str, detail: str) -> str:
     with _LOCK:
         if _TASK["state"] == "running":
-            raise RuntimeError("已有环境任务正在进行，请等它结束或先取消")
+            raise RuntimeError(tr("已有环境任务正在进行，请等它结束或先取消"))
         task_id = uuid.uuid4().hex[:12]
         _TASK.update(id=task_id, kind=kind, state="running", detail=detail,
                      log=[], started_at=time.time(), ended_at=0.0)
@@ -153,7 +154,7 @@ def _run(kind: str, cmd: list, detail: str, env_extra: dict = None) -> str:
                 creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
             )
         except Exception as e:  # noqa: BLE001
-            _finish("failed", f"无法启动子进程：{e}")
+            _finish("failed", tr("无法启动子进程：{err}", err=e))
             return
         with _LOCK:
             _PROC["proc"] = proc
@@ -161,9 +162,9 @@ def _run(kind: str, cmd: list, detail: str, env_extra: dict = None) -> str:
         if current_task()["state"] == "cancelled":
             return
         if code == 0:
-            _finish("done", "完成")
+            _finish("done", tr("完成"))
         else:
-            _finish("failed", f"子进程退出码 {code}")
+            _finish("failed", tr("子进程退出码 {code}", code=code))
 
     threading.Thread(target=worker, daemon=True).start()
     return task_id
@@ -191,7 +192,7 @@ def start_install_embedding(index_url: str = "", packages: list = None) -> str:
             args += ["-r", req]
         else:  # 缺文件时退回到显式包名
             args += ["torch", "sentence-transformers"]
-    return _run("install_embedding", args, "正在安装 torch + sentence-transformers…")
+    return _run("install_embedding", args, tr("正在安装 torch + sentence-transformers…"))
 
 
 # ---------- 嵌入模型下载 ----------
@@ -207,7 +208,7 @@ def start_download_model(model_name: str = "", mirror: str = "") -> str:
         cmd += ["--endpoint", endpoint]
     return _run(
         "download_model", cmd,
-        f"正在下载嵌入模型 {model or '(默认)'}…",
+        tr("正在下载嵌入模型 {model}…", model=model or tr('(默认)')),
         env_extra={
             "HF_HUB_OFFLINE": "0",
             "TRANSFORMERS_OFFLINE": "0",
@@ -221,13 +222,13 @@ def cancel_task() -> dict:
         proc = _PROC.get("proc")
         running = _TASK["state"] == "running"
     if not running:
-        return {"ok": False, "detail": "当前没有正在进行的任务"}
+        return {"ok": False, "detail": tr("当前没有正在进行的任务")}
     if proc is None:
-        return {"ok": False, "detail": "任务正在启动中，请稍后再试"}
+        return {"ok": False, "detail": tr("任务正在启动中，请稍后再试")}
     try:
         proc.terminate()
     except Exception as e:  # noqa: BLE001
         return {"ok": False, "detail": str(e)}
-    _log("[已请求取消任务]")
-    _finish("cancelled", "已取消")
+    _log(tr("[已请求取消任务]"))
+    _finish("cancelled", tr("已取消"))
     return {"ok": True}

@@ -30,6 +30,7 @@ import MemoryDetail from '@/components/MemoryDetail'
 import RelationsView from '@/components/RelationsView'
 import AvatarCropDialog from '@/components/AvatarCropDialog'
 import { useNameDisplay, displayNameFor } from '@/store/nameDisplay'
+import { t } from '@/i18n'
 
 type JsonValue = unknown
 
@@ -143,7 +144,7 @@ function CharacterEditor({ id, onClose }: { id: string; onClose: () => void }) {
         try {
           nextState = { ...state, current_plan: JSON.parse(planText || '{}') }
         } catch {
-          toast.push('规划 JSON 格式错误', '请检查后重试', 'error')
+          toast.push(t('规划 JSON 格式错误'), t('请检查后重试'), 'error')
           setSaving(false)
           return
         }
@@ -155,9 +156,9 @@ function CharacterEditor({ id, onClose }: { id: string; onClose: () => void }) {
       setState(d.state)
       setPlanText(JSON.stringify(d.state?.current_plan ?? d.state?.plan ?? [], null, 2))
       useApp.getState().refresh()
-      toast.push('角色已保存', '', 'success')
+      toast.push(t('角色已保存'), '', 'success')
     } catch (e) {
-      toast.push('保存失败', String(e), 'error')
+      toast.push(t('保存失败'), String(e), 'error')
     } finally {
       setSaving(false)
     }
@@ -169,9 +170,9 @@ function CharacterEditor({ id, onClose }: { id: string; onClose: () => void }) {
       useApp.getState().refresh()
       const d = await getCharacter(id)
       setDetail(d)
-      toast.push('已提升为核心角色', '', 'success')
+      toast.push(t('已提升为核心角色'), '', 'success')
     } catch (e) {
-      toast.push('提升失败', String(e), 'error')
+      toast.push(t('提升失败'), String(e), 'error')
     }
   }
 
@@ -185,15 +186,15 @@ function CharacterEditor({ id, onClose }: { id: string; onClose: () => void }) {
           <DialogTitle className="flex items-center gap-2">
             <CharacterAvatar name={name} avatar={avatar} size="sm" />
             {name}
-            <Badge variant={detail?.is_core ? 'default' : 'secondary'}>{detail?.is_core ? '核心' : '普通'}</Badge>
-            {!detail?.is_core && <Button size="sm" variant="outline" onClick={promote}>提升为核心</Button>}
+            <Badge variant={detail?.is_core ? 'default' : 'secondary'}>{detail?.is_core ? t('核心') : t('普通')}</Badge>
+            {!detail?.is_core && <Button size="sm" variant="outline" onClick={promote}>{t('提升为核心')}</Button>}
           </DialogTitle>
         </DialogHeader>
 
         <div className="mb-2 grid shrink-0 grid-cols-3 gap-1">
           {(['form', 'json', 'plan'] as const).map((m) => (
             <Button key={m} variant={mode === m ? 'default' : 'outline'} size="sm" onClick={() => setMode(m)}>
-              {m === 'form' ? '表单' : m === 'json' ? 'JSON' : '规划'}
+              {m === 'form' ? t('表单') : m === 'json' ? 'JSON' : t('规划')}
             </Button>
           ))}
         </div>
@@ -204,11 +205,11 @@ function CharacterEditor({ id, onClose }: { id: string; onClose: () => void }) {
               <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-background/40 p-3">
                 <CharacterAvatar name={name} avatar={avatar} size="lg" />
                 <div className="flex-1">
-                  <div className="text-sm font-semibold">{name} 的头像</div>
-                  <p className="text-xs text-muted-foreground">从本地选择图片并裁剪一个方形区域作为头像。</p>
+                  <div className="text-sm font-semibold">{t('{name} 的头像', { name })}</div>
+                  <p className="text-xs text-muted-foreground">{t('从本地选择图片并裁剪一个方形区域作为头像。')}</p>
                 </div>
                 <Button size="sm" variant="outline" onClick={() => setAvatarOpen(true)}>
-                  <ImagePlus className="size-4" /> 导入头像
+                  <ImagePlus className="size-4" /> {t('导入头像')}
                 </Button>
               </div>
               <ObjectForm data={card} onChange={setCard} />
@@ -225,20 +226,20 @@ function CharacterEditor({ id, onClose }: { id: string; onClose: () => void }) {
           )}
           {mode === 'plan' && (
             <div className="space-y-2">
-              <div className="text-sm font-semibold text-violet-700 dark:text-violet-200">当前规划（时间范围 / 地点 / 做什么）</div>
+              <div className="text-sm font-semibold text-violet-700 dark:text-violet-200">{t('当前规划（时间范围 / 地点 / 做什么）')}</div>
               <Textarea
                 className="min-h-[160px] w-full font-mono text-sm"
                 value={planText}
                 onChange={(e) => setPlanText(e.target.value)}
-                placeholder='[{"time":"15:00 - 18:00","place":"地点","action":"做什么"}]'
+                placeholder={t('[{"time":"15:00 - 18:00","place":"地点","action":"做什么"}]')}
               />
             </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>取消</Button>
-          <Button onClick={save} disabled={saving}>{saving ? '保存中…' : '保存'}</Button>
+          <Button variant="ghost" onClick={onClose}>{t('取消')}</Button>
+          <Button onClick={save} disabled={saving}>{saving ? t('保存中…') : t('保存')}</Button>
         </DialogFooter>
       </DialogContent>
       <AvatarCropDialog open={avatarOpen} onClose={() => setAvatarOpen(false)}
@@ -262,10 +263,10 @@ function AddCharacterDialog({ onClose }: { onClose: () => void }) {
     try {
       const r = await addSessionCharacter(id)
       useApp.getState().applyState(r.state)
-      toast.push('已添加角色', '', 'success')
+      toast.push(t('已添加角色'), '', 'success')
       onClose()
     } catch (e) {
-      toast.push('添加失败', String(e), 'error')
+      toast.push(t('添加失败'), String(e), 'error')
     } finally {
       setBusy(false)
     }
@@ -274,8 +275,8 @@ function AddCharacterDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[88vh] w-[min(96vw,760px)] overflow-hidden">
-        <DialogHeader><DialogTitle>添加角色到会话</DialogTitle></DialogHeader>
-        <Input placeholder="搜索角色…" value={q} onChange={(e) => setQ(e.target.value)} />
+        <DialogHeader><DialogTitle>{t('添加角色到会话')}</DialogTitle></DialogHeader>
+        <Input placeholder={t("搜索角色…")} value={q} onChange={(e) => setQ(e.target.value)} />
         <div className="min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-1">
           {list.map((c) => (
             <button key={c.id} disabled={busy} onClick={() => add(c.id)}
@@ -290,9 +291,9 @@ function AddCharacterDialog({ onClose }: { onClose: () => void }) {
               <Plus className="size-4 shrink-0 text-violet-500" />
             </button>
           ))}
-          {list.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">没有匹配的角色。</p>}
+          {list.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t('没有匹配的角色。')}</p>}
         </div>
-        <DialogFooter><Button variant="ghost" onClick={onClose}>关闭</Button></DialogFooter>
+        <DialogFooter><Button variant="ghost" onClick={onClose}>{t('关闭')}</Button></DialogFooter>
       </DialogContent>
     </Dialog>
   )
@@ -315,13 +316,13 @@ export default function CharactersTab() {
   const filtered = q ? chars.filter((c) => c.name.includes(q) || c.id.includes(q)) : chars
 
   const remove = async (c: CharacterListItem) => {
-    if (!window.confirm(`确定从会话中移除「${c.name}」？\n其状态与记忆也会一并删除。`)) return
+    if (!window.confirm(`${t('确定从会话中移除「')}${c.name}${t('」？\n其状态与记忆也会一并删除。')}`)) return
     try {
       const r = await removeSessionCharacter(c.id)
       useApp.getState().applyState(r.state)
-      toast.push('已移除角色', '', 'success')
+      toast.push(t('已移除角色'), '', 'success')
     } catch (e) {
-      toast.push('移除失败', String(e), 'error')
+      toast.push(t('移除失败'), String(e), 'error')
     }
   }
 
@@ -329,8 +330,8 @@ export default function CharactersTab() {
     return (
       <div className="flex h-full flex-col">
         <div className="flex shrink-0 items-center gap-2 border-b border-border/60 px-4 py-2.5">
-          <Button size="sm" variant="ghost" onClick={() => setView({ type: 'list' })}><ArrowLeft className="size-4" /> 返回</Button>
-          <h3 className="text-base font-semibold text-violet-700 dark:text-violet-200">💭 {displayNameFor(view.name, chars.find((c) => c.id === view.id)?.surname, nameDisp.showSurname)} 的记忆</h3>
+          <Button size="sm" variant="ghost" onClick={() => setView({ type: 'list' })}><ArrowLeft className="size-4" /> {t('返回')}</Button>
+          <h3 className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('💭 {name} 的记忆', { name: displayNameFor(view.name, chars.find((c) => c.id === view.id)?.surname, nameDisp.showSurname) })}</h3>
         </div>
         <div className="min-h-0 flex-1 overflow-hidden"><MemoryDetail cid={view.id} /></div>
       </div>
@@ -352,16 +353,16 @@ export default function CharactersTab() {
   return (
     <div className="flex h-full flex-col p-2.5">
       <div className="flex shrink-0 items-center justify-between">
-        <h3 className="text-sm font-semibold text-violet-700 dark:text-violet-200">👥 会话角色（{chars.length}）</h3>
+        <h3 className="text-sm font-semibold text-violet-700 dark:text-violet-200">{t('👥 会话角色（{n}）', { n: chars.length })}</h3>
         <div className="flex items-center gap-2">
           <label className="flex cursor-pointer items-center gap-1 text-[11px] text-muted-foreground">
-            显示姓
+            {t('显示姓')}
             <Switch size="sm" checked={nameDisp.showSurname} onCheckedChange={(v) => nameDisp.set({ showSurname: v })} />
           </label>
-          <Button size="xs" variant="outline" onClick={() => setAdding(true)}><Plus className="size-3" /> 添加</Button>
+          <Button size="xs" variant="outline" onClick={() => setAdding(true)}><Plus className="size-3" /> {t('添加')}</Button>
         </div>
       </div>
-      <Input className="mt-1.5 shrink-0 h-7 text-sm" placeholder="搜索角色…" value={q} onChange={(e) => setQ(e.target.value)} />
+      <Input className="mt-1.5 shrink-0 h-7 text-sm" placeholder={t("搜索角色…")} value={q} onChange={(e) => setQ(e.target.value)} />
       <div className="mt-2 flex-1 space-y-1.5 overflow-y-auto pr-1">
         {filtered.map((c) => (
           <Card key={c.id} className="border-border/60 bg-background/40">
@@ -370,35 +371,34 @@ export default function CharactersTab() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="truncate text-sm font-semibold">{displayNameFor(c.name, c.surname, nameDisp.showSurname)}</span>
-                  <Badge variant={c.is_core ? 'default' : 'secondary'} className="text-[9px]">{c.is_core ? '核心' : '普通'}</Badge>
+                  <Badge variant={c.is_core ? 'default' : 'secondary'} className="text-[9px]">{c.is_core ? t('核心') : t('普通')}</Badge>
                 </div>
-                <div className="truncate text-[11px] text-muted-foreground">{c.intro || c.location || '（无描述）'}</div>
+                <div className="truncate text-[11px] text-muted-foreground">{c.intro || c.location || t('（无描述）')}</div>
                 {(c.doing || c.location) && (
                   <div className="truncate text-[10px] text-violet-500/80">
-                    {c.doing ? `规划：${c.doing}${c.location ? ` @ ${c.location}` : ''}` : `地点：${c.location}`}
+                    {c.doing ? `${t('规划：')}${c.doing}${c.location ? ` @ ${c.location}` : ''}` : `${t('地点：')}${c.location}`}
                   </div>
                 )}
               </div>
               <div className="flex shrink-0 items-center gap-1">
-                <Button size="xs" variant="outline" className="px-1.5" onClick={() => setEditing(c.id)}>角色卡</Button>
-                <Button size="xs" variant="outline" className="px-1.5" title="查看记忆" onClick={() => setView({ type: 'memory', id: c.id, name: c.name })}>
-                  <BrainCircuit className="size-3" /> 记忆
+                <Button size="xs" variant="outline" className="px-1.5" onClick={() => setEditing(c.id)}>{t('角色卡')}</Button>
+                <Button size="xs" variant="outline" className="px-1.5" title={t("查看记忆")} onClick={() => setView({ type: 'memory', id: c.id, name: c.name })}>
+                  <BrainCircuit className="size-3" /> {t('记忆')}
                 </Button>
-                <Button size="xs" variant="outline" className="px-1.5" title="查看关系网" onClick={() => setView({ type: 'relations', id: c.id, name: c.name })}>
-                  <Share2 className="size-3" /> 关系
+                <Button size="xs" variant="outline" className="px-1.5" title={t("查看关系网")} onClick={() => setView({ type: 'relations', id: c.id, name: c.name })}>
+                  <Share2 className="size-3" /> {t('关系')}
                 </Button>
-                <Button size="icon-xs" variant="ghost" className="text-red-600 dark:text-red-400" onClick={() => remove(c)} title="移除角色">
+                <Button size="icon-xs" variant="ghost" className="text-red-600 dark:text-red-400" onClick={() => remove(c)} title={t("移除角色")}>
                   <Trash2 className="size-3.5" />
                 </Button>
               </div>
             </CardContent>
           </Card>
         ))}
-        {filtered.length === 0 && <p className="pt-6 text-center text-xs text-muted-foreground">没有匹配的角色。</p>}
+        {filtered.length === 0 && <p className="pt-6 text-center text-xs text-muted-foreground">{t('没有匹配的角色。')}</p>}
       </div>
       {editing && <CharacterEditor id={editing} onClose={() => setEditing(null)} />}
       {adding && <AddCharacterDialog onClose={() => setAdding(false)} />}
     </div>
   )
 }
-

@@ -10,6 +10,7 @@ import { useApp } from '@/store/appStore'
 import { useToast } from '@/store/toastStore'
 import { getSessionWorldbooks, getSessionWorldbook, putSessionWorldbook, updateWorldSummary } from '@/lib/api'
 import { parseClock } from '@/lib/format'
+import { t } from '@/i18n'
 
 export default function WorldTab() {
   const appState = useApp((s) => s.appState)
@@ -35,9 +36,9 @@ export default function WorldTab() {
   const save = async () => {
     try {
       await putSessionWorldbook(sel, JSON.parse(text))
-      toast.push('当前会话的这本世界书已保存', '', 'success')
+      toast.push(t('当前会话的这本世界书已保存'), '', 'success')
     } catch (e) {
-      toast.push('保存失败（JSON 格式错误？）', String(e), 'error')
+      toast.push(t('保存失败（JSON 格式错误？）'), String(e), 'error')
     }
   }
 
@@ -53,10 +54,10 @@ export default function WorldTab() {
     try {
       const r = await updateWorldSummary({ overview, background, tone })
       useApp.getState().applyState(r.state)
-      toast.push('世界摘要已更新', '', 'success')
+      toast.push(t('世界摘要已更新'), '', 'success')
       setEditOpen(false)
     } catch (e) {
-      toast.push('保存失败', String(e), 'error')
+      toast.push(t('保存失败'), String(e), 'error')
     }
   }
 
@@ -65,13 +66,13 @@ export default function WorldTab() {
       {wbList.length > 0 && (
         <Card className="shrink-0 border-border/60 bg-background/40">
           <CardHeader className="pb-1">
-            <CardTitle className="text-sm font-semibold text-violet-700 dark:text-violet-200">本会话世界书（{wbList.length} 本）</CardTitle>
+            <CardTitle className="text-sm font-semibold text-violet-700 dark:text-violet-200">{t('本会话世界书（{n} 本）', { n: wbList.length })}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-1.5">
             {wbList.map((wb) => (
               <div key={wb.id} className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm ${sel === wb.id ? 'border-fuchsia-400/60 bg-primary/10' : 'border-border/60 bg-background/40'}`}>
                 <span className="cursor-pointer truncate" onClick={() => open(wb.id)}>{wb.name}</span>
-                {sel !== wb.id && <Button size="xs" variant="ghost" className="px-2" onClick={() => open(wb.id)}>查看/编辑</Button>}
+                {sel !== wb.id && <Button size="xs" variant="ghost" className="px-2" onClick={() => open(wb.id)}>{t('查看/编辑')}</Button>}
               </div>
             ))}
           </CardContent>
@@ -83,8 +84,8 @@ export default function WorldTab() {
           <CardContent className="space-y-2 px-3 py-3">
             <Textarea className="h-[200px] w-full resize-none overflow-y-auto font-mono text-sm" value={text} onChange={(e) => setText(e.target.value)} />
             <div className="flex gap-2">
-              <Button className="flex-1" onClick={save}>保存这本世界书</Button>
-              <Button variant="ghost" onClick={() => setSel('')}>收起</Button>
+              <Button className="flex-1" onClick={save}>{t('保存这本世界书')}</Button>
+              <Button variant="ghost" onClick={() => setSel('')}>{t('收起')}</Button>
             </div>
           </CardContent>
         </Card>
@@ -93,15 +94,15 @@ export default function WorldTab() {
       <Card className="shrink-0 border-border/60 bg-background/40">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">📖 世界摘要</CardTitle>
-            <Button size="icon-sm" variant="ghost" className="h-7 w-7" onClick={openEdit} title="编辑世界摘要/背景">
+            <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('📖 世界摘要')}</CardTitle>
+            <Button size="icon-sm" variant="ghost" className="h-7 w-7" onClick={openEdit} title={t("编辑世界摘要/背景")}>
               <Pencil className="size-3.5" />
             </Button>
           </div>
         </CardHeader>
         <CardContent className="max-h-40 overflow-y-auto">
           <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
-            {appState?.world_summary || '暂无世界信息'}
+            {appState?.world_summary || t('暂无世界信息')}
           </pre>
         </CardContent>
       </Card>
@@ -109,37 +110,37 @@ export default function WorldTab() {
       <Dialog open={editOpen} onOpenChange={(o) => !o && setEditOpen(false)}>
         <DialogContent className="max-h-[92vh] w-[min(96vw,560px)] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>✏️ 编辑世界摘要 / 背景</DialogTitle>
+            <DialogTitle>{t('✏️ 编辑世界摘要 / 背景')}</DialogTitle>
           </DialogHeader>
           <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
             <div className="space-y-1">
-              <Label className="text-sm text-muted-foreground">概览（世界书摘要）</Label>
-              <Textarea className="min-h-[80px] resize-y" value={overview} onChange={(e) => setOverview(e.target.value)} placeholder="世界的整体概况…" />
+              <Label className="text-sm text-muted-foreground">{t('概览（世界书摘要）')}</Label>
+              <Textarea className="min-h-[80px] resize-y" value={overview} onChange={(e) => setOverview(e.target.value)} placeholder={t("世界的整体概况…")} />
             </div>
             <div className="space-y-1">
-              <Label className="text-sm text-muted-foreground">背景（当前会话情境）</Label>
-              <Textarea className="min-h-[80px] resize-y" value={background} onChange={(e) => setBackground(e.target.value)} placeholder="本次会话开场的背景…" />
+              <Label className="text-sm text-muted-foreground">{t('背景（当前会话情境）')}</Label>
+              <Textarea className="min-h-[80px] resize-y" value={background} onChange={(e) => setBackground(e.target.value)} placeholder={t("本次会话开场的背景…")} />
             </div>
             <div className="space-y-1">
-              <Label className="text-sm text-muted-foreground">基调（可选）</Label>
-              <Textarea className="min-h-[48px] resize-y" value={tone} onChange={(e) => setTone(e.target.value)} placeholder="世界基调，如：轻松日常 / 悬疑…" />
+              <Label className="text-sm text-muted-foreground">{t('基调（可选）')}</Label>
+              <Textarea className="min-h-[48px] resize-y" value={tone} onChange={(e) => setTone(e.target.value)} placeholder={t("世界基调，如：轻松日常 / 悬疑…")} />
             </div>
           </div>
           <DialogFooter className="shrink-0">
-            <Button variant="ghost" onClick={() => setEditOpen(false)}>取消</Button>
-            <Button onClick={saveSummary}>保存</Button>
+            <Button variant="ghost" onClick={() => setEditOpen(false)}>{t('取消')}</Button>
+            <Button onClick={saveSummary}>{t('保存')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Card className="flex min-h-[220px] flex-1 flex-col border-border/60 bg-background/40">
         <CardHeader className="shrink-0 pb-2">
-          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">🕰️ 世界时间线</CardTitle>
+          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('🕰️ 世界时间线')}</CardTitle>
         </CardHeader>
         <CardContent className="min-h-0 flex-1 overflow-hidden">
           <ScrollArea className="h-full pr-2">
             {timeline.length === 0 ? (
-              <p className="text-xs text-muted-foreground">时间线为空，随世界推进生成。</p>
+              <p className="text-xs text-muted-foreground">{t('时间线为空，随世界推进生成。')}</p>
             ) : (
               <ol className="relative ml-2 space-y-3 border-l border-border pl-4">
                 {timeline.map((ev) => (

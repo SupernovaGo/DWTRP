@@ -5,13 +5,21 @@ import type {
   RelationGraph,
   SSEEvent,
 } from '@/types'
+import { langHeader, t } from '@/i18n'
 
 const JSON_HEADERS = { 'Content-Type': 'application/json' }
 // 打包成桌面/移动 App 时可指向远程后端；默认走同域（开发时由 Vite 代理到 8000）。
 const BASE = (import.meta.env.VITE_API_BASE as string | undefined) ?? ''
 
+/** 所有请求都带上当前界面语言，服务端的提示与报错会跟着切换语言。 */
+function apiFetch(url: string, init?: RequestInit): Promise<Response> {
+  const headers = new Headers(init?.headers)
+  for (const [k, v] of Object.entries(langHeader())) headers.set(k, v)
+  return fetch(url, { ...init, headers })
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const resp = await fetch(BASE + url, init)
+  const resp = await apiFetch(BASE + url, init)
   if (!resp.ok) {
     let detail = ''
     try {
@@ -108,8 +116,8 @@ export function rewindLastTurn(): Promise<{
 }
 
 export async function streamRewind(onEvent: (ev: SSEEvent) => void): Promise<void> {
-  const resp = await fetch(BASE + '/api/assist/rewind/stream', { method: 'POST' })
-  if (!resp.ok || !resp.body) throw new Error('重写请求失败')
+  const resp = await apiFetch(BASE + '/api/assist/rewind/stream', { method: 'POST' })
+  if (!resp.ok || !resp.body) throw new Error(t('重写请求失败'))
   await readEventStream(resp, onEvent)
 }
 
@@ -117,12 +125,12 @@ export async function streamManualUpdate(
   target: 'world' | 'character',
   onEvent: (ev: SSEEvent) => void,
 ): Promise<void> {
-  const resp = await fetch(BASE + '/api/session/manual-update/stream', {
+  const resp = await apiFetch(BASE + '/api/session/manual-update/stream', {
     method: 'POST',
     headers: JSON_HEADERS,
     body: JSON.stringify({ target }),
   })
-  if (!resp.ok || !resp.body) throw new Error('更新请求失败')
+  if (!resp.ok || !resp.body) throw new Error(t('更新请求失败'))
   await readEventStream(resp, onEvent)
 }
 
@@ -255,13 +263,13 @@ export async function streamChat(
   onEvent: (ev: SSEEvent) => void,
   segments?: { type: string; text: string }[],
 ): Promise<void> {
-  const resp = await fetch(BASE + '/api/chat/stream', {
+  const resp = await apiFetch(BASE + '/api/chat/stream', {
     method: 'POST',
     headers: JSON_HEADERS,
     body: JSON.stringify({ text, segments }),
   })
   if (!resp.ok || !resp.body) {
-    throw new Error('对话请求失败')
+    throw new Error(t('对话请求失败'))
   }
   const reader = resp.body.getReader()
   const decoder = new TextDecoder()

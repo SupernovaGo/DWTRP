@@ -11,6 +11,7 @@ import {
   TextField,
 } from '@/components/config-fields'
 import UpdateConfigCard from '@/components/UpdateConfigCard'
+import { t } from '@/i18n'
 
 type AgentCfg = {
   model: string
@@ -28,7 +29,7 @@ export function EngineConfigForm() {
   useEffect(() => {
     getConfig()
       .then((r) => setCfg(r.config))
-      .catch((e) => toast.push('加载配置失败', String(e), 'error'))
+      .catch((e) => toast.push(t('加载配置失败'), String(e), 'error'))
   }, [])
 
   const world = cfg.world ?? {}
@@ -52,9 +53,9 @@ export function EngineConfigForm() {
       await updateConfig({ world, memory, llm, snapshot, update, logs })
       const r = await getConfig()
       setCfg(r.config)
-      toast.push('配置已保存', '将作为新建会话的默认设置', 'success')
+      toast.push(t('配置已保存'), t('将作为新建会话的默认设置'), 'success')
     } catch (e) {
-      toast.push('保存失败', String(e), 'error')
+      toast.push(t('保存失败'), String(e), 'error')
     } finally {
       setSaving(false)
     }
@@ -64,30 +65,30 @@ export function EngineConfigForm() {
     <div className="space-y-3">
       <Card className="border-border/60 bg-background/40">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">🌍 世界 & 记忆</CardTitle>
+          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('🌍 世界 & 记忆')}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
-          <NumberField label="每次默认推进时长(分钟)" value={world.default_advance_minutes ?? 15} onChange={(v) => patchWorld({ default_advance_minutes: v })} />
-          <NumberField label="近期事件容量（回合）" value={world.scene_history_limit ?? 24} min={1} max={200} onChange={(v) => patchWorld({ scene_history_limit: v })} />
-          <NumberField label="长期记忆上限条数" value={memory.max_events ?? 300} onChange={(v) => patchMemory({ max_events: v })} />
-          <NumberField label="检索事件数" value={memory.top_events ?? 4} onChange={(v) => patchMemory({ top_events: v })} />
-          <NumberField label="记忆总结比例(0.5=前一半)" value={memory.working_summarize_ratio ?? 0.5} min={0.05} max={0.95} step={0.05} onChange={(v) => patchMemory({ working_summarize_ratio: v })} />
+          <NumberField label={t("每次默认推进时长(分钟)")} value={world.default_advance_minutes ?? 15} onChange={(v) => patchWorld({ default_advance_minutes: v })} />
+          <NumberField label={t("近期事件容量（回合）")} value={world.scene_history_limit ?? 24} min={1} max={200} onChange={(v) => patchWorld({ scene_history_limit: v })} />
+          <NumberField label={t("长期记忆上限条数")} value={memory.max_events ?? 300} onChange={(v) => patchMemory({ max_events: v })} />
+          <NumberField label={t("检索事件数")} value={memory.top_events ?? 4} onChange={(v) => patchMemory({ top_events: v })} />
+          <NumberField label={t("记忆总结比例(0.5=前一半)")} value={memory.working_summarize_ratio ?? 0.5} min={0.05} max={0.95} step={0.05} onChange={(v) => patchMemory({ working_summarize_ratio: v })} />
 
-          <NumberField label="检索到的长期记忆上限(字符)" value={memory.max_context_chars ?? 5000} onChange={(v) => patchMemory({ max_context_chars: v })} />
-          <NumberField label="近期记忆上限(字)" value={memory.working_memory_limit ?? 8000} onChange={(v) => patchMemory({ working_memory_limit: v })} />
-          <NumberField label="检索·向量权重" value={memory.retrieval_embedding_weight ?? 0.6} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ retrieval_embedding_weight: v })} />
-          <NumberField label="检索·关键词权重" value={memory.retrieval_bm25_weight ?? 0.4} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ retrieval_bm25_weight: v })} />
-          <NumberField label="检索·相关性权重" value={memory.relevance_weight ?? 0.6} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ relevance_weight: v })} />
-          <NumberField label="检索·重要度权重" value={memory.importance_weight ?? 0.2} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ importance_weight: v })} />
-          <NumberField label="检索·时效权重" value={memory.recency_weight ?? 0.2} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ recency_weight: v })} />
-          <NumberField label="世界书词条插入深度(回合)" value={world.world_entry_depth ?? 2} min={1} max={10} onChange={(v) => patchWorld({ world_entry_depth: v })} />
-          <NumberField label="世界书词条最大数量" value={world.world_entry_max ?? 4} min={1} max={20} onChange={(v) => patchWorld({ world_entry_max: v })} />
+          <NumberField label={t("检索到的长期记忆上限(字符)")} value={memory.max_context_chars ?? 5000} onChange={(v) => patchMemory({ max_context_chars: v })} />
+          <NumberField label={t("近期记忆上限(字)")} value={memory.working_memory_limit ?? 8000} onChange={(v) => patchMemory({ working_memory_limit: v })} />
+          <NumberField label={t("检索·向量权重")} value={memory.retrieval_embedding_weight ?? 0.6} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ retrieval_embedding_weight: v })} />
+          <NumberField label={t("检索·关键词权重")} value={memory.retrieval_bm25_weight ?? 0.4} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ retrieval_bm25_weight: v })} />
+          <NumberField label={t("检索·相关性权重")} value={memory.relevance_weight ?? 0.6} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ relevance_weight: v })} />
+          <NumberField label={t("检索·重要度权重")} value={memory.importance_weight ?? 0.2} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ importance_weight: v })} />
+          <NumberField label={t("检索·时效权重")} value={memory.recency_weight ?? 0.2} min={0} max={1} step={0.05} onChange={(v) => patchMemory({ recency_weight: v })} />
+          <NumberField label={t("世界书词条插入深度(回合)")} value={world.world_entry_depth ?? 2} min={1} max={10} onChange={(v) => patchWorld({ world_entry_depth: v })} />
+          <NumberField label={t("世界书词条最大数量")} value={world.world_entry_max ?? 4} min={1} max={20} onChange={(v) => patchWorld({ world_entry_max: v })} />
           <label className="col-span-2 flex items-center justify-between gap-2 text-sm">
-            <span>允许记忆多轮检索（输出时间将变长）</span>
+            <span>{t('允许记忆多轮检索（输出时间将变长）')}</span>
             <Switch checked={Boolean(memory.agentic_retrieval)} onCheckedChange={(v) => patchMemory({ agentic_retrieval: v })} />
           </label>
           <NumberField
-            label="日志保留天数（默认 3；0 = 永久保留）"
+            label={t("日志保留天数（默认 3；0 = 永久保留）")}
             value={logs.retention_days ?? 3}
             min={0}
             max={3650}
@@ -100,18 +101,18 @@ export function EngineConfigForm() {
 
       <Card className="border-border/60 bg-background/40">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">🤖 各 Agent 模型</CardTitle>
+          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('🤖 各 Agent 模型')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {agents.map(([name, agent]) => (
             <div key={name} className="rounded-lg border border-border/60 p-3">
               <div className="mb-2 text-sm font-semibold text-violet-700 dark:text-violet-300">{name}</div>
               <div className="grid grid-cols-2 gap-3">
-                <TextField label="模型" value={agent.model} onChange={(v) => patchAgent(name, { model: v })} />
-                <NumberField label="温度" value={agent.temperature} onChange={(v) => patchAgent(name, { temperature: v })} />
-                <NumberField label="最大token" value={agent.max_tokens} onChange={(v) => patchAgent(name, { max_tokens: v })} />
+                <TextField label={t("模型")} value={agent.model} onChange={(v) => patchAgent(name, { model: v })} />
+                <NumberField label={t("温度")} value={agent.temperature} onChange={(v) => patchAgent(name, { temperature: v })} />
+                <NumberField label={t("最大token")} value={agent.max_tokens} onChange={(v) => patchAgent(name, { max_tokens: v })} />
                 <ChoiceField
-                  label="思考级别"
+                  label={t("思考级别")}
                   value={(agent.reasoning_effort as string) ?? 'low'}
                   onChange={(v) => patchAgent(name, { reasoning_effort: v })}
                   options={[
@@ -121,7 +122,7 @@ export function EngineConfigForm() {
                   ]}
                 />
                 <label className="flex items-center justify-between gap-2 text-sm">
-                  <span>思考模式（默认low）</span>
+                  <span>{t('思考模式（默认low）')}</span>
                   <Switch checked={Boolean(agent.thinking)} onCheckedChange={(v) => patchAgent(name, { thinking: v })} />
                 </label>
               </div>
@@ -132,25 +133,25 @@ export function EngineConfigForm() {
 
       <Card className="border-border/60 bg-background/40">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">💾 存档点（回溯）</CardTitle>
+          <CardTitle className="text-base font-semibold text-violet-700 dark:text-violet-200">{t('💾 存档点（回溯）')}</CardTitle>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4">
           <NumberField
-            label="自动存档间隔（每 N 轮）· 0 关闭"
+            label={t("自动存档间隔（每 N 轮）· 0 关闭")}
             value={snapshot.interval ?? 0}
             min={0}
             max={999}
             onChange={(v) => setCfg((c) => ({ ...c, snapshot: { ...c.snapshot, interval: v } }))}
           />
           <NumberField
-            label="自动存档保留数"
+            label={t("自动存档保留数")}
             value={snapshot.max ?? 20}
             min={1}
             max={200}
             onChange={(v) => setCfg((c) => ({ ...c, snapshot: { ...c.snapshot, max: v } }))}
           />
           <NumberField
-            label="回合回退上限（保留最近 N 回合 · 0 关闭）"
+            label={t("回合回退上限（保留最近 N 回合 · 0 关闭）")}
             value={snapshot.rewind_max_turns ?? 10}
             min={0}
             max={100}
@@ -160,7 +161,7 @@ export function EngineConfigForm() {
       </Card>
 
       <Button className="sticky bottom-0 z-10 w-full border border-border/60 shadow-lg" onClick={save} disabled={saving}>
-        {saving ? '保存中…' : '保存默认设置'}
+        {saving ? t('保存中…') : t('保存默认设置')}
       </Button>
     </div>
   )
@@ -173,7 +174,7 @@ export function PromptsForm() {
   useEffect(() => {
     getPrompts()
       .then((r) => setPrompts(r.prompts))
-      .catch((e) => toast.push('加载提示词失败', String(e), 'error'))
+      .catch((e) => toast.push(t('加载提示词失败'), String(e), 'error'))
   }, [])
 
   const save = async () => {
@@ -181,9 +182,9 @@ export function PromptsForm() {
     try {
       const r = await updatePrompts(prompts)
       setPrompts(r.prompts)
-      toast.push('提示词已保存', '', 'success')
+      toast.push(t('提示词已保存'), '', 'success')
     } catch (e) {
-      toast.push('保存失败', String(e), 'error')
+      toast.push(t('保存失败'), String(e), 'error')
     }
   }
 
@@ -201,7 +202,7 @@ export function PromptsForm() {
           </Card>
         ))}
       <Button className="sticky bottom-0 z-10 w-full border border-border/60 shadow-lg" onClick={save}>
-        保存提示词
+        {t('保存提示词')}
       </Button>
     </div>
   )

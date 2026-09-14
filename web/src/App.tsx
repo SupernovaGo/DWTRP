@@ -14,6 +14,7 @@ import { useUiDisplay, applyUiDisplay } from '@/store/uiDisplay'
 import { useApiKey, useMissingApiKey } from '@/store/apiKeyStore'
 import { cn } from '@/lib/utils'
 import { switchSession } from '@/lib/api'
+import { useLang, useT } from '@/i18n'
 import { Sun, Moon, AlertTriangle } from 'lucide-react'
 
 const TABS: [ShellView, string][] = [
@@ -24,6 +25,7 @@ const TABS: [ShellView, string][] = [
 ]
 
 function SessionLanding({ onNew }: { onNew: () => void }) {
+  const t = useT()
   const shell = useShell()
   const app = useApp()
   const onSwitch = async (id: string) => {
@@ -40,18 +42,23 @@ function SessionLanding({ onNew }: { onNew: () => void }) {
       <div className="text-7xl">✨</div>
       <h1 className="mt-5 text-2xl font-semibold">TRPE</h1>
       <p className="mt-3 max-w-md text-base text-muted-foreground">
-        从一个已有会话继续，或新建一个会话开始。
+        {t('从一个已有会话继续，或新建一个会话开始。')}
       </p>
       <Button size="lg" className="mt-6 rounded-xl bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 text-base" onClick={onNew}>
-        ＋ 新建会话
+        {t('＋ 新建会话')}
       </Button>
       {shell.sessions.length > 0 && (
         <div className="mt-8 w-full max-w-lg space-y-2.5">
-          <div className="text-sm text-muted-foreground">已有会话（点击加载）</div>
+          <div className="text-sm text-muted-foreground">{t('已有会话（点击加载）')}</div>
           {shell.sessions.slice(0, 8).map((s) => (
             <div key={s.id} className="cursor-pointer rounded-xl border border-border/60 bg-background/40 px-5 py-3 text-left text-base hover:bg-background/60" onClick={() => onSwitch(s.id)}>
               <div className="font-medium">{s.name}</div>
-              <div className="mt-0.5 text-xs text-muted-foreground">{(s as any).characters ?? 0} 角色 · {((s as any).worldbooks ?? []).length} 世界书</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                {t('{characters} 角色 · {worldbooks} 世界书', {
+                  characters: (s as any).characters ?? 0,
+                  worldbooks: ((s as any).worldbooks ?? []).length,
+                })}
+              </div>
             </div>
           ))}
         </div>
@@ -61,6 +68,8 @@ function SessionLanding({ onNew }: { onNew: () => void }) {
 }
 
 export default function App() {
+  const t = useT()
+  const lang = useLang((s) => s.lang)
   const shell = useShell()
   const theme = useTheme((s) => s.theme)
   const toggleTheme = useTheme((s) => s.toggle)
@@ -83,6 +92,11 @@ export default function App() {
   }, [theme])
 
   useEffect(() => {
+    // 让浏览器 / 屏幕阅读器知道当前语言（也便于字体与断行按语言处理）。
+    document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN'
+  }, [lang])
+
+  useEffect(() => {
     applyUiDisplay(ui)
   }, [ui.borderAlpha, ui.textAlpha])
 
@@ -103,7 +117,7 @@ export default function App() {
                 className={cn('flex items-center gap-1 rounded-lg px-3.5 py-1.5 text-[15px] font-medium transition-colors',
                   shell.view === v ? 'bg-primary/20 text-violet-700 dark:text-violet-200' : 'text-muted-foreground hover:bg-background/60',
                   v === 'settings' && missingKey && shell.view !== v && 'text-amber-600 dark:text-amber-300')}>
-                {label}
+                {t(label)}
                 {v === 'settings' && missingKey && (
                   <span className="flex size-4 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white">!</span>
                 )}
@@ -112,13 +126,13 @@ export default function App() {
           </nav>
           <div className="ml-auto flex items-center gap-2">
             <SessionMenu onNewSession={() => setNewOpen(true)} />
-            <Button variant="outline" className="hidden gap-1.5 md:inline-flex" onClick={() => setNewOpen(true)}>＋ 新建会话</Button>
+            <Button variant="outline" className="hidden gap-1.5 md:inline-flex" onClick={() => setNewOpen(true)}>{t('＋ 新建会话')}</Button>
             <Button
               variant="ghost"
               size="icon"
               className="rounded-full border border-border/60"
               onClick={toggleTheme}
-              title={theme === 'dark' ? '切换浅色模式' : '切换深色模式'}
+              title={theme === 'dark' ? t('切换浅色模式') : t('切换深色模式')}
             >
               {theme === 'dark' ? <Sun className="size-5" /> : <Moon className="size-5" />}
             </Button>
@@ -130,7 +144,7 @@ export default function App() {
               className={cn('flex shrink-0 items-center gap-1 rounded-full px-3 py-1 text-[13px] font-medium transition-colors',
                 shell.view === v ? 'bg-primary/20 text-violet-700 dark:text-violet-200' : 'text-muted-foreground hover:bg-background/60',
                 v === 'settings' && missingKey && 'text-amber-600 dark:text-amber-300')}>
-              {label}
+              {t(label)}
               {v === 'settings' && missingKey && (
                 <span className="flex size-4 items-center justify-center rounded-full bg-amber-500 text-[11px] font-bold text-white">!</span>
               )}
@@ -142,7 +156,7 @@ export default function App() {
           <div className="flex items-center gap-2 border-t border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-[13px] text-amber-800 dark:text-amber-100 md:px-4">
             <AlertTriangle className="size-4 shrink-0" />
             <span className="min-w-0 flex-1 truncate">
-              尚未配置 DeepSeek API Key：对话、世界更新与记忆总结都无法使用。
+              {t('尚未配置 DeepSeek API Key：对话、世界更新与记忆总结都无法使用。')}
             </span>
             <Button
               size="sm"
@@ -150,7 +164,7 @@ export default function App() {
               className="h-7 shrink-0 border-amber-500/50 text-amber-800 hover:bg-amber-500/10 dark:text-amber-100"
               onClick={() => shell.openSettings('connection')}
             >
-              去填写
+              {t('去填写')}
             </Button>
           </div>
         )}

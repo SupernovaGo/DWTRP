@@ -8,6 +8,7 @@ import ChatInput from '@/components/ChatInput'
 import { useApp } from '@/store/appStore'
 import { advancePerceptionTime } from '@/lib/api'
 import { FastForward, Pencil } from 'lucide-react'
+import { t } from '@/i18n'
 
 const MIN_L = 320
 const MIN_R = 340
@@ -127,7 +128,7 @@ export default function MainView() {
     return (
       <div className="flex h-full flex-col items-center justify-center text-center">
         <div className="text-5xl">✨</div>
-        <p className="mt-3 text-sm text-muted-foreground">加载会话中…</p>
+        <p className="mt-3 text-sm text-muted-foreground">{t('加载会话中…')}</p>
       </div>
     )
   }
@@ -142,17 +143,17 @@ export default function MainView() {
             onClick={() => setEnvCollapsed((v) => !v)}
           >
             <span>{envCollapsed ? '▲' : '▼'}</span>
-            <span>🌐 环境</span>
+            <span>{t('🌐 环境')}</span>
           </button>
           <div className="flex items-center gap-2">
-            <Button size="icon-sm" variant="ghost" className="h-8 w-8" onClick={advanceTime} title="手动推进时间">
+            <Button size="icon-sm" variant="ghost" className="h-8 w-8" onClick={advanceTime} title={t("手动推进时间")}>
               <FastForward className="size-4" />
             </Button>
-            <Button size="icon-sm" variant="ghost" className="h-8 w-8" onClick={() => setEditingEnv(true)} title="编辑环境">
+            <Button size="icon-sm" variant="ghost" className="h-8 w-8" onClick={() => setEditingEnv(true)} title={t("编辑环境")}>
               <Pencil className="size-4" />
             </Button>
-            <span className="text-[11px] text-muted-foreground">{envCollapsed ? '已收起' : `${Math.round(envPct * 100)}%`}</span>
-            <Button size="sm" variant="outline" onClick={() => setWorldOpen(true)}>🎛️ 世界</Button>
+            <span className="text-[11px] text-muted-foreground">{envCollapsed ? t('已收起') : `${Math.round(envPct * 100)}%`}</span>
+            <Button size="sm" variant="outline" onClick={() => setWorldOpen(true)}>{t('🎛️ 世界')}</Button>
           </div>
         </div>
 
@@ -164,7 +165,7 @@ export default function MainView() {
             <div
               className="group flex h-1.5 shrink-0 cursor-row-resize touch-none items-center justify-center bg-border/30 transition-colors hover:bg-fuchsia-400/40"
               onPointerDown={startVDrag}
-              title="拖动调整上下比例"
+              title={t("拖动调整上下比例")}
             >
               <div className="h-0.5 w-10 rounded-full bg-fuchsia-400/40 transition-colors group-hover:bg-fuchsia-300/70" />
             </div>
@@ -210,7 +211,7 @@ export default function MainView() {
         <div
           className="group flex w-1.5 shrink-0 cursor-col-resize touch-none items-center bg-border/30 transition-colors hover:bg-fuchsia-400/40"
           onPointerDown={(e) => startDrag('left', e)}
-          title="拖动调整"
+          title={t("拖动调整")}
         >
           <div className="mx-auto h-10 w-0.5 rounded-full bg-fuchsia-400/40 transition-colors group-hover:bg-fuchsia-300/70" />
         </div>
@@ -223,7 +224,7 @@ export default function MainView() {
         <div
           className="group flex w-1.5 shrink-0 cursor-col-resize touch-none items-center bg-border/30 transition-colors hover:bg-fuchsia-400/40"
           onPointerDown={(e) => startDrag('right', e)}
-          title="拖动调整"
+          title={t("拖动调整")}
         >
           <div className="mx-auto h-10 w-0.5 rounded-full bg-fuchsia-400/40 transition-colors group-hover:bg-fuchsia-300/70" />
         </div>

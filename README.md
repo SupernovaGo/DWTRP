@@ -1,118 +1,121 @@
-# TRPE · 动态世界文字角色扮演引擎
+# TRPE · Dynamic-World Text Role-Playing Engine
 
-**Text Role-Playing Engine(TRPE)** —— 一个以玩家为核心、多 Agent 协作的动态世界文字角色扮演引擎。
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)](#quick-start)
+[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](#requirements)
+[![LLM](https://img.shields.io/badge/LLM-DeepSeek%20API-4d6bfe)](#configure-the-api-key)
+[![license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![version](https://img.shields.io/badge/version-1.0-orange)](#version-history)
 
-*A player-centric, multi-agent collaborative dynamic-world text role-playing engine.*
+**English** | [中文](README.zh-CN.md)
 
-它不像传统聊天机器人那样只做「一问一答」，而是让多个专门化的 Agent 共同维护一个持续运转的世界，角色有各自的记忆与规划，环境会随时间和玩家行为变化，宏观世界在后台自动推进。
+**Text Role-Playing Engine (TRPE)** — a player-centric, multi-agent collaborative dynamic-world text role-playing engine.
 
-## 主界面
+Instead of the usual "one question, one answer" chatbot, several specialised agents maintain a world that keeps running: characters have their own memories and plans, the environment changes with time and with what the player does, and the wider world advances in the background.
 
-![主界面](./docs/mainUI.png)
+## Main UI
 
----
-
-## 目录
-
-- [核心特性](#核心特性)
-- [快速开始](#快速开始)
-- [可选组件：向量检索与嵌入模型](#可选组件向量检索与嵌入模型)
-- [配置 API Key](#配置-api-key)
-- [界面功能](#界面功能)
-- [角色记忆与规划](#角色记忆与规划)
-- [角色卡与世界书](#角色卡与世界书)
-- [目录结构](#目录结构)
-- [手机 / 平板访问](#手机--平板访问)
-- [日志与排查](#日志与排查)
-- [技术栈](#技术栈)
-- [已知问题](#已知问题)
+![main UI](./docs/mainUI.png)
 
 ---
 
-## 核心特性
+## Table of contents
 
-和 SillyTavern（酒馆）这类「单角色对话」工具不同，本项目更注重**多人世界的模拟**。
+- [Core features](#core-features)
+- [Quick start](#quick-start)
+- [Optional: vector search and the embedding model](#optional-vector-search-and-the-embedding-model)
+- [Language](#language)
+- [Configure the API key](#configure-the-api-key)
+- [UI overview](#ui-overview)
+- [Character memory and planning](#character-memory-and-planning)
+- [Character cards and worldbooks](#character-cards-and-worldbooks)
+- [Directory layout](#directory-layout)
+- [Phone / tablet access](#phone--tablet-access)
+- [Logs and troubleshooting](#logs-and-troubleshooting)
+- [Tech stack](#tech-stack)
+- [Known issues](#known-issues)
+- [Version history](#version-history)
 
-#### 多 Agent 协作的世界模拟
+---
 
-| Agent | 职责 | 调用时机 |
+## Core features
+
+Unlike single-character chat tools such as SillyTavern, this project focuses on **simulating a world with many characters**.
+
+#### Multi-agent world simulation
+
+| Agent | Responsibility | When it runs |
 | --- | --- | --- |
-| **Player Agent** | 根据当前情况、角色规划等信息，按顺序决定本回合需要做出反应的角色，并给出剧情大致走向 | 每回合 |
-| **Environment Agent** | 根据Player Agent和当回合行动角色的输出，动态维护玩家附近的环境（时间 / 天气 / 地点 / 环境细节），尽可能保证世界一致性 | 每回合 |
-| **Frontend Agent** | 前台角色扮演；多个角色时串行执行，先调用角色的动作与说话会进入后调用角色的上下文 | 0 ~ N 次 / 回合 |
-| **Character Memory Agent** | 依据角色这段时间的经历总结长期记忆，并顺带判断性格 / 关系变化 | 世界时间到达更新点或手动更新 |
-| **Character Plan Agent** | 依据新的记忆为角色规划下一时间段要做什么 | 同上 |
-| **World Update Agent** | 依据辅助更新信息、角色更新与世界时间线，输出「上次更新 → 现在」的社会 / 自然变化，推进宏观世界 | 同上 |
+| **Player Agent** | Decides, from the situation and each character's plan, which characters react this turn, and sketches the direction of the story | Every turn |
+| **Environment Agent** | Maintains the environment around the player (time / weather / location / details) from the Player Agent and the acting characters' output, keeping the world consistent | Every turn |
+| **Frontend Agent** | Plays a character on stage; with several characters they run in sequence, so earlier actions and lines enter the later characters' context | 0 – N times / turn |
+| **Character Memory Agent** | Turns what a character lived through into long-term memory, and notes personality / relationship changes | When world time reaches an update point, or manually |
+| **Character Plan Agent** | Plans what each character will do in the next period, based on the new memories | Same as above |
+| **World Update Agent** | Advances the macro world — social and natural changes from the last update to now — using the hints, character updates and timeline | Same as above |
 
-此外还有若干辅助任务：会话初始化、AI 帮写 / 重写、故事模式、近期记忆总结等
+Several helper tasks exist as well: session initialization, AI writing / rewriting, story mode, recent-memory summarization, and more.
 
-世界/角色更新采用**两阶段**设计：先在后台线程生成更新结果（此期间前台仍可继续对话），
-生成完毕后才短暂加锁写回数据，因此长时间的后台更新不会卡住你的输入
+World/character updates use a **two-phase** design: results are generated on a background thread (during which the front end stays usable), and only then is data briefly locked and written back — so long background updates never block your typing.
 
-#### 多角色支持
+#### Multi-character support
 
-场景原生支持多角色交互，由 Player Agent 统一调度；同时通过多种筛选条件压缩 Player Agent 的上下文（只列出「可能与本回合玩家交互」的角色），把 Token 消耗维持在可接受范围。
+A scene natively supports several interacting characters, scheduled by the Player Agent. A range of filters compresses the Player Agent's context (only characters who *could* interact with the player this turn are listed), keeping token usage acceptable.
 
-#### 信息可视化渲染
+#### Visualised information
 
-- **精准模式**：强制角色分别输出 思考 / 动作 / 说话（AI 帮写同样遵守），并按不同风格渲染，提升可读性。
-  玩家消息也可在普通模式与精准模式之间切换，并支持自定义渲染样式。
-- **环境面板**（桌面端在左栏，移动端在顶部）：直观展示玩家当前所处的时间、天气、地点与环境细节，
-  每回合随剧情更新，并给变化项打上 `NEW!` 角标，有利于维护世界一致性的同时，让玩家可以依据环境信息进行下一步行动
+- **Precise mode**: characters are required to output thought / action / speech separately (AI writing follows the same rule) and they are rendered in different styles for readability. Player messages can also switch between normal and precise mode, with customizable rendering styles.
+- **Environment panel** (left column on desktop, top on mobile): shows the player's current time, weather, location and environment details, updated each turn, with a `NEW!` badge on what changed — which keeps the world consistent and helps the player decide what to do next.
 
-#### 易于控制的世界
+#### A world that is easy to control
 
-- **世界指令**：可在任意时刻插入多条指令，控制剧情走向或世界变化。
-- **输入框里的「指令」**：会被转成**仅本回合生效**的一次性世界指令（换地点、指定时间流逝、点名角色等）。
-- 可随时修改天气、时间等环境信息，以及世界背景与世界摘要。
-- 想看角色在想什么，可打开「显示思考」；懒得打字，可用 AI 帮写；想当小说看，可开启**故事模式**，并可选择性填写指令控制故事发展（故事模式下仅 Environment Agent 每回合调用）。
+- **World directives**: insert any number of directives at any time to steer the plot or the world.
+- **The "directive" segment in the input box**: converted into a one-shot world directive that only applies to this turn (change location, advance time, call on a character…).
+- Weather, time, world background and world summary can be edited at any time.
+- Want to know what a character is thinking? Turn on "show thoughts". Too lazy to type? Use AI write. Want to read it as a novel? Turn on **story mode** and optionally describe how the story should develop (in story mode only the Environment Agent is called each turn).
 
-#### 面向「世界模拟」的优化
+#### Optimised for world simulation
 
-- 各 Agent 的提示词做了**前缀稳定化**处理，把长期不变的内容放在前面以提高 KV Cache 命中率。
-- 角色分为「核心角色」与「普通角色」，可配置「仅为核心角色生成长期记忆与规划」「玩家角色信息详细度」等，显著降低 Token 消耗。
-- 支持随时把角色加入 / 移出世界，便于剧情中新角色的登场与旧角色的退场。
-- 尽可能并行化：记忆总结、世界更新、角色更新都在后台执行，仅在写数据时短暂加锁。
+- Every agent prompt is **prefix-stabilised**: long-lived content goes first, improving KV-cache hits.
+- Characters are split into "core" and "regular"; you can configure "generate long-term memory and plans for core characters only", "player character detail level", and so on, greatly reducing token usage.
+- Characters can be added to / removed from the world at any time, so new characters can enter and old ones can leave the story.
+- Parallelised wherever possible: memory summaries, world updates and character updates all run in the background and only lock briefly when writing.
 
 ---
 
-## 快速开始
+## Quick start
 
-#### 环境要求
+#### Requirements
 
-要运行此项目：
+To run this project you need:
 
-1. 需要预先安装Python（≥ 3.11），且保证将Python路径加入环境变量
-2. 需要有DeepSeek API Key
+1. Python installed (**≥ 3.11**) and available on your `PATH`.
+2. A **DeepSeek API Key**.
 
-| 组件 | 版本要求 | 是否必需 | 说明 |
+| Component | Version | Required | Notes |
 | --- | --- | --- | --- |
-| **Python** | **≥ 3.11** | ✅ 必需 | 后端与引擎（用到标准库 `tomllib`） |
-| **DeepSeek API Key** | — | ✅ 必需 | 目前仅支持 DeepSeek API，用于所有 LLM 调用 |
-| **Node.js** | ≥ 20.19 | ⬜ 可选 | 只有在修改 / 重新构建前端时才需要；仓库已带构建好的 `web/dist` |
-| **torch + sentence-transformers** | — | ⬜ 可选 | 向量检索（语义记忆）；不装则用 BM25 关键词检索 |
-| **嵌入模型** `BAAI/bge-base-zh-v1.5` | 约 400 MB | ⬜ 可选 | 首次使用向量检索前下载一次，**不随仓库分发** |
+| **Python** | **≥ 3.11** | ✅ Yes | Backend and engine (uses the `tomllib` standard library) |
+| **DeepSeek API Key** | — | ✅ Yes | Only the DeepSeek API is supported, for every LLM call |
+| **Node.js** | ≥ 20.19 | ⬜ No | Only needed to modify / rebuild the front end; a built `web/dist` ships with the repo |
+| **torch + sentence-transformers** | — | ⬜ No | Vector search (semantic memory); without them BM25 keyword search is used |
+| **Embedding model** `BAAI/bge-base-zh-v1.5` | ~400 MB | ⬜ No | Downloaded once before the first vector search; **not** shipped with the repo |
 
-磁盘占用：只装必需依赖约 200 MB；再装 torch 视平台约 1 ~ 3 GB；嵌入模型约 400 MB。
+Disk usage: about 200 MB with required dependencies only; 1 – 3 GB more with torch, depending on platform; about 400 MB for the embedding model.
 
-#### 首次使用
+#### First run
 
-1. **准备环境**：Windows 双击 `setup.bat`（macOS / Linux 运行 `./setup.sh`）。
-   它会创建 `.venv`、安装必需依赖，并询问是否安装向量检索的可选组件。
-2. **填 API Key**：启动后进入「设置 → 连接 / 高级」，填入 DeepSeek API Key。
-3. **新建会话**：在「主界面 / 资源库」里新建会话——选择世界书、角色与玩家身份，
-   填写开场提示，确认初始化预览后即可开始。
+1. **Prepare the environment**: on Windows double-click `setup.bat` (on macOS / Linux run `./setup.sh`). It creates `.venv`, installs the required dependencies and asks whether to install the optional vector-search components.
+2. **Enter the API key**: after starting, go to "Settings → Connection / Advanced" and paste your DeepSeek API Key.
+3. **Create a session**: in "Main / Library" create a session — pick a worldbook, characters and a player identity, write the opening prompt, check the initialization preview, and start.
 
-> 首次启动**没有默认会话**，需要自己新建一个（仓库自带的《蔚蓝档案》世界书与角色卡，仅作为演示模板）。
+> There is **no default session** on first launch; create one yourself. (The bundled *Blue Archive* worldbook and character cards are only demos.)
 
-#### Windows：一键准备 + 启动
+#### Windows: one-step setup + start
 
 ```bat
-setup.bat     :: 创建 .venv、安装必需依赖，并询问是否安装向量检索的依赖与模型
-start.bat     :: 启动后端并自动打开浏览器（必要时先构建前端）
+setup.bat     :: create .venv, install required deps, ask about vector search
+start.bat     :: start the backend and open the browser (builds the front end if needed)
 ```
 
-`start.bat` 会依次寻找解释器：环境变量 `TRPE_PYTHON` → 项目内 `.venv` → `py -3` → `PATH` 中的 `python`。也就是说：**只要你已经有一个 Python ≥ 3.11 的环境，把它指给 `TRPE_PYTHON` 就能直接启动**，不需要再建虚拟环境：
+`start.bat` looks for an interpreter in this order: the `TRPE_PYTHON` environment variable → the project's `.venv` → `py -3` → `python` on `PATH`. In other words: **if you already have a Python ≥ 3.11 environment, just point `TRPE_PYTHON` at it** — no virtualenv needed:
 
 ```bat
 set TRPE_PYTHON=D:\Python\.venv\Scripts\python.exe
@@ -122,285 +125,287 @@ start.bat
 #### macOS / Linux
 
 ```bash
-./setup.sh    # 等价于 python3 scripts/setup_env.py
+./setup.sh    # same as python3 scripts/setup_env.py
 ./start.sh
 ```
 
-#### 手动方式
+#### Manual
 
 ```bash
 python -m pip install -r requirements.txt
-python server/main.py            # 默认 http://127.0.0.1:8000
-python server/main.py --host 0.0.0.0 --port 8000   # 允许局域网 / 手机访问
-python server/main.py --mock     # 离线模式：不调用 LLM，用于验证界面与接口
+python server/main.py            # default http://127.0.0.1:8000
+python server/main.py --host 0.0.0.0 --port 8000   # allow LAN / phone access
+python server/main.py --mock     # offline mode: no LLM calls, for checking the UI and API
 ```
 
-前端已随仓库提供构建产物（`web/dist`，由后端直接托管），因此**普通使用不需要 Node.js**。只有修改前端代码时才需要：
+The built front end ships with the repo (`web/dist`, served directly by the backend), so **normal use does not need Node.js**. Only do this when you change the front end:
 
 ```bash
 cd web
 npm install
-npm run build        # 产物输出到 web/dist
-npm run dev          # 前端热更新开发（把 /api 代理到 http://127.0.0.1:8000）
+npm run build        # output goes to web/dist
+npm run dev          # hot-reload dev server (proxies /api to http://127.0.0.1:8000)
 ```
 
-#### 环境准备脚本
+#### Setup script
 
-`scripts/setup_env.py` 是跨平台的准备脚本，`setup.bat` / `setup.sh` 只是它的薄封装：
+`scripts/setup_env.py` is the cross-platform setup script; `setup.bat` / `setup.sh` are thin wrappers around it:
 
 ```bash
-python scripts/setup_env.py --check                 # 只检查环境，不做改动
-python scripts/setup_env.py                         # 建 .venv + 装必需依赖（交互询问可选组件）
-python scripts/setup_env.py --yes                   # 非交互：只装必需依赖
-python scripts/setup_env.py --embedding --download-model    # 连向量检索一起装好
+python scripts/setup_env.py --check                 # only check the environment
+python scripts/setup_env.py                         # create .venv + install required deps (asks about optional ones)
+python scripts/setup_env.py --yes                   # non-interactive: required deps only
+python scripts/setup_env.py --embedding --download-model    # include vector search
 python scripts/setup_env.py --pip-index https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 ---
 
-## 可选组件：向量检索与嵌入模型
+## Optional: vector search and the embedding model
 
-**必需依赖只有 `requirements.txt`**（FastAPI + BM25 关键词检索）。向量检索依赖的`torch`、`sentence-transformers` 与嵌入模型体积很大，因此**默认不随项目分发**，在准备环境时会询问是否需要：
+**The only required dependency file is `requirements.txt`** (FastAPI + BM25 keyword retrieval). The vector-search dependencies — `torch` and `sentence-transformers` — together with the embedding model are very large, so **they are not distributed with the project**; the setup script asks whether you want them:
 
 ```
-向量检索（语义记忆）需要额外的 torch + sentence-transformers（数百 MB ~ 数 GB）
-与嵌入模型（约 400 MB）。不安装也能正常使用，记忆检索会用 BM25 关键词匹配；
-之后随时可以在「设置 → 运行环境」里补装。
-是否现在安装向量检索的依赖与模型？ [y/N]
+Vector search (semantic memory) needs extra torch + sentence-transformers (hundreds of MB to several GB)
+and an embedding model (about 400 MB). Everything works without them, using BM25 keyword matching;
+you can install them later in "Settings → Runtime".
+Install the vector-search dependencies and model now? [y/N]
 ```
 
-**不安装：** 长期记忆仍然照常写入、检索与遗忘，只是相关性打分只用BM25 关键词（+ 重要度 + 时效性），不再有语义相似度。界面上会显示当前模式是「仅 BM25 关键词」。
+**If you skip it:** long-term memory is still written, retrieved and forgotten as usual; relevance is then scored with BM25 keywords only (+ importance + recency), without semantic similarity. The UI shows "BM25 keywords only".
 
-**之后想补装（三种方式任选）：**
+**To add it later (any of three ways):**
 
-1. **设置 → 运行环境**：可查看「Python 版本 / 依赖是否安装 / 模型是否已缓存」，并一键「安装嵌入依赖」「下载嵌入模型」，进度与日志实时显示；还能在此开关向量检索、填写 pip 源与 HuggingFace 镜像。
-2. **重新运行准备脚本**：`python scripts/setup_env.py --embedding --download-model`
-3. **手动命令**：
+1. **Settings → Runtime**: see "Python version / dependencies installed? / model cached?", and install the embedding dependencies or download the model with one click, with live progress and logs. You can also toggle vector search and set the pip index and HuggingFace endpoint there.
+2. **Re-run the setup script**: `python scripts/setup_env.py --embedding --download-model`
+3. **Manual commands**:
 
    ```bash
-   python -m pip install -r requirements-embedding.txt      # 可选依赖
-   python scripts/fetch_embedding_model.py                  # 下载嵌入模型
-   python scripts/fetch_embedding_model.py --endpoint https://hf-mirror.com   # 国内镜像
+   python -m pip install -r requirements-embedding.txt      # optional dependencies
+   python scripts/fetch_embedding_model.py                  # download the embedding model
+   python scripts/fetch_embedding_model.py --endpoint https://hf-mirror.com   # mirror
    ```
 
-> **国内网络**：下载模型建议使用镜像 `https://hf-mirror.com`（可在「设置 → 运行环境」里填写，或给命令加 `--endpoint`）。
-> 
->**N 卡加速**（可选）：`python -m pip install --index-url https://download.pytorch.org/whl/cu129 torch`，之后再 `pip install -r requirements-embedding.txt`。仅在 CPU 上跑也完全可用。
+> **In mainland China**: use the mirror `https://hf-mirror.com` to download the model (set it in "Settings → Runtime", or pass `--endpoint`).
+>
+> **CUDA acceleration (optional)**: `python -m pip install --index-url https://download.pytorch.org/whl/cu129 torch`, then `pip install -r requirements-embedding.txt`. Running on CPU only works fine too.
 
-模型文件保存在 HuggingFace 缓存目录（`HF_HOME` 或 `~/.cache/huggingface`）。服务端默认以**离线方式**加载本地缓存中的模型，避免网络受限时反复重试导致「卡在正在回应」；对应的配置项是 `config.toml` 的 `[embedding] offline`。
+The model files are stored in the HuggingFace cache (`HF_HOME` or `~/.cache/huggingface`). The server loads cached models **offline** by default, so a restricted network will not make it retry forever and appear stuck on "responding"; the matching setting is `[embedding] offline` in `config.toml`.
 
-相关配置（也可在设置界面修改）：
+Related settings (also editable in the UI):
 
 ```toml
 [embedding]
-enabled = true        # 关闭后即使装了 torch 也只用 BM25
-offline = true        # 只从本地缓存加载，不联网
-model_name = "BAAI/bge-base-zh-v1.5"	# 默认嵌入模型
+enabled = true        # off: BM25 only, even with torch installed
+offline = true        # load from the local cache only, never online
+model_name = "BAAI/bge-base-zh-v1.5"	# default embedding model
 dim = 768
 
 [env]
-pip_args = []         # 安装可选依赖时的额外 pip 参数
-pip_index_url = ""    # 例如 https://pypi.tuna.tsinghua.edu.cn/simple
-hf_endpoint = ""      # 例如 https://hf-mirror.com
+pip_args = []         # extra pip arguments when installing optional deps
+pip_index_url = ""    # e.g. https://pypi.tuna.tsinghua.edu.cn/simple
+hf_endpoint = ""      # e.g. https://hf-mirror.com
 ```
 
 ---
 
-## 配置 API Key
+## Language
 
-首次使用需要在**设置 → 连接 / 高级**里填入 DeepSeek API Key（保存在 `server/.env`），也可以手动编辑该文件（可从 `server/.env.example` 复制）：
+The UI ships with **full English and Chinese support**, switchable at runtime in **Settings → Personalization → 🌐 Language / 语言**. The choice is stored in the browser and takes effect immediately. Attention: **The default prompt language is Chinese**.
+
+---
+
+## Configure the API key
+
+On first use, paste your DeepSeek API Key in **Settings → Connection / Advanced** (it is stored in `server/.env`), or edit that file directly (copy it from `server/.env.example`):
 
 ```ini
 DEEPSEEK_API_KEY=sk-xxxxxxxxxxxxxxxx
 ```
 
-还可以直接设置环境变量：`$env:DEEPSEEK_API_KEY = "sk-..."`（Windows）/ `export DEEPSEEK_API_KEY=sk-...`。
-
-> 没有 Key 时后端仍可启动、可浏览界面，但对话、更新与记忆总结会提示「未找到 API Key」。
-> 
->未配置 Key 时界面会明确提醒：顶部出现琥珀色警示条，顶栏「设置」与「设置 → 连接 / 高级」均带感叹号标记，输入框上方也会提示「未配置 API Key，无法发送」，点击即可跳到填写处。
-> 
-> 目前仅支持 **DeepSeek API**（走 OpenAI 兼容的 Chat Completions 接口）。
+> Without a key the backend still starts and the UI can be browsed, but chatting, updates and memory summaries will report "API Key not found".
+>
+> When no key is configured the UI says so clearly: an amber banner appears at the top, "Settings" and "Settings → Connection / Advanced" get an exclamation mark, and a hint above the input box says "no API Key configured, cannot send" — click it to jump to the field.
+>
+> Only the **DeepSeek API** is supported
 
 ---
 
-## 界面功能
+## UI overview
 
-顶部是导航栏，主界面是其中一个板块：
+The top bar is the navigation; the main view is one of the sections:
 
-- **主界面**：底部输入栏 + 三栏布局（左环境 / 中 历史记录 / 右世界面板），左右栏宽度可拖拽调整。
-  - 左栏（玩家感知）：当前时间、天气（图标随天气变化）、地点、环境备注，变化项带 `NEW!` 角标。
-  - 中栏（Story）：历史交流与行动，流式渲染。动作用 *斜体*，说话用「」气泡，角色思考默认隐藏。
-  - 右栏（世界面板）：**记忆**（容量条、事件统计、重要度走势、增删事件）、**角色表**、**玩家身份**、
-    **世界信息**（逐本查看 / 编辑世界书、世界摘要、时间线）、**会话配置**等。
-- **资源库**：管理世界书、角色卡（支持搜索与标签）、玩家身份卡三大模板库，可下载模板文件。
-- **设置**：引擎参数、提示词、运行环境、个性化、连接 / 高级（API Key 与原生 JSON 配置）。
-- **日志**：查看每个 Agent 的完整提示词、模型原始返回，以及关键运行事件（可按 agent / 事件类型筛选、搜索）。
-- 左侧（移动端为顶部下拉）是**会话栏**：新建、切换、删除会话。
-
-玩家消息支持「说 / 做」分段输入与精准模式切换；「令」段会转成本回合的世界指令。
+- **Main**: input bar at the bottom + three columns (environment on the left / history in the middle / world panel on the right); the side columns are drag-resizable.
+  - Left (what the player perceives): current time, weather (icon follows the weather), location, environment notes, with a `NEW!` badge on changes.
+  - Middle (Story): the exchange and actions, streamed. Actions are rendered in *italics*, speech in 「」 bubbles, character thoughts hidden by default.
+  - Right (world panel): **Memory** (capacity bar, event stats, importance trend, add/remove events), **characters**, **player identity**, **world info** (view/edit each worldbook, world summary, timeline) and **session config**.
+- **Library**: manage the three template libraries — worldbooks, character cards (with search and tags) and player identities — and download template files.
+- **Settings**: engine parameters, prompts, runtime environment, personalization (including the language switch), connection / advanced (API key and raw JSON config).
+- **Logs**: the full prompt and raw model output for every agent, plus key runtime events (filterable by agent / event type, with search).
+- On the left (a dropdown at the top on mobile) is the **session bar**: create, switch and delete sessions.
 
 ---
 
-## 角色记忆与规划
+## Character memory and planning
 
-#### 记忆的生成与检索
+#### How memory is produced and retrieved
 
-- **近期事件（工作记忆）**：对话过程中按「时间 / 地点 / 天气 / 环境变化」逐条累积在会话内；超过 `working_memory_limit` 后，把靠前的部分交给 LLM 总结成一条条**事件**。
-- **长期记忆（事件）**：事件是长期记忆的唯一单位（一段值得记住的总结 + 重要度 + 时间）
-- **向量存本地文件**：每个角色的记忆向量保存在 `server/data/sessions/<id>/memory/<角色id>.vec.pkl`，检索时直接读文件算余弦相似度，不依赖数据库存储。
-- **检索打分**：`相关性（向量相似度 + BM25 关键词）+ 重要度 + 时效性` 加权排序，取 Top 事件拼进角色上下文。没有安装嵌入模型时，相关性退化为纯 BM25。
-- **多轮检索（可选）**：把 `[memory] agentic_retrieval` 设为 `true` 后，角色前台作答前可以先规划检索——改写检索词、查看指定 id 的事件，最多补 `max_retrieval_rounds` 轮。
-- 默认**仅核心角色**生成长期记忆与规划，可在「设置 → 引擎参数」或会话配置里修改。
+- **Recent events (working memory)**: accumulated in the session as "time / place / weather / environment changes" during the conversation; once `working_memory_limit` is exceeded, the earlier part is summarized by the LLM into individual **events**.
+- **Long-term memory (events)**: events are the only unit of long-term memory (a memorable summary + importance + time).
+- **Vectors stored in local files**: each character's memory vectors live in `server/data/sessions/<id>/memory/<character id>.vec.pkl`; retrieval reads the file and computes cosine similarity, with no database.
+- **Scoring**: `relevance (vector similarity + BM25 keywords) + importance + recency`, top events are selected into the character context. Without the embedding model, relevance degrades to BM25 only.
+- **Multi-round retrieval (optional)**: with `[memory] agentic_retrieval = true`, a character can plan its retrieval before answering — rewriting the query, inspecting events by id, for up to `max_retrieval_rounds` rounds.
+- By default long-term memory and planning are generated for **core characters only**; change that in "Settings → Engine" or the session config.
 
-#### 遗忘机制
+#### Forgetting
 
-按时效性与重要度对长期记忆打分，超过 `max_events` 后淘汰得分最低的记忆。
+Long-term memories are scored by recency and importance; once `max_events` is exceeded, the lowest-scoring memories are dropped.
 
-#### 角色规划
+#### Character planning
 
-角色规划（`Character Plan Agent`）会依据最新总结出的记忆，为角色生成**下一时间段**要做的事，
-每条包含 `时间 / 地点 / 行动 / 是否与玩家相关`，可以有多条且首尾相接；规划会进入 Player Agent 与 Frontend Agent 的上下文，让角色的行动更有连续性。
+The `Character Plan Agent` uses the freshly summarized memories to plan what a character will do **next period**. Each entry has `time / place / action / related to the player`, and there can be several that connect end to end; plans enter the Player Agent's and Frontend Agent's context so characters act coherently over time.
 
 ---
 
-## 角色卡与世界书
+## Character cards and worldbooks
 
-角色卡与世界书均以 JSON 存储。为了特色功能的实现，本项目的角色卡与世界书与 SillyTavern **不兼容**，字段规范见`docs/std_data.md`；**资源库**UI界面里可以下载模板文件：
+Character cards and worldbooks are stored as JSON. To support its distinctive features, this project's cards and worldbooks are **not compatible** with SillyTavern; the field specification is in `docs/std_data.md`, and the **Library** UI can download template files:
 
 - `templates/character_card.template.json`
 - `templates/worldbook.template.json`
 
-字段分三类：
+Fields come in three groups:
 
-| 类别 | 说明 |
+| Group | Description |
 | --- | --- |
-| **必需字段** | 如角色卡的 `name` / `intro`、世界书的 `name` / `overview`；缺失会导致导入失败 |
-| **推荐字段** | 如角色卡的 `surname` / `relationships` / `speech_style`、世界书的 `locations` / `entries`；缺失也能用 |
-| **自定义字段** | 仅角色卡中存在，自定义字段不会被解析，而是**原样拼接**进 Frontend Agent 的上下文 |
+| **Required** | e.g. a card's `name` / `intro`, a worldbook's `name` / `overview`; missing fields fail the import |
+| **Recommended** | e.g. a card's `surname` / `relationships` / `speech_style`, a worldbook's `locations` / `entries`; usable when missing |
+| **Custom** | character cards only; custom fields are not parsed but are **concatenated verbatim** into the Frontend Agent's context |
 
-新建会话时会把所选的世界书、角色卡、身份卡**复制**进会话目录，之后的修改只影响该会话，
-因此多个会话可以共用同一套模板而各自演进。
+When a session is created, the selected worldbook, character cards and identity are **copied** into the session directory; later edits affect that session only, so several sessions can share one set of templates while evolving separately.
 
 ---
 
-## 目录结构
+## Directory layout
 
 ```text
 TRPE/
-├── README.md                     # 本文档
+├── README.md                     # this document (English)
+├── README.zh-CN.md               # Chinese version
 ├── docs/
-│   ├── architecture.png          # 系统架构图
-│   └── architecture.svg          # 架构图源文件（可自行修改后重新导出）
-│   └── std_data.md               # 数据字段说明
-├── requirements.txt              # 必需依赖（后端 + BM25）
-├── requirements-embedding.txt    # 可选依赖（torch + sentence-transformers）
-├── setup.bat / start.bat         # Windows 一键准备 / 启动
+│   ├── architecture.png          # system architecture diagram
+│   ├── architecture.svg          # diagram source (edit and re-export)
+│   └── std_data.md               # data field specification
+├── requirements.txt              # required deps (backend + BM25)
+├── requirements-embedding.txt    # optional deps (torch + sentence-transformers)
+├── setup.bat / start.bat         # Windows one-step setup / start
 ├── setup.sh  / start.sh          # macOS / Linux
 ├── scripts/
-│   ├── setup_env.py              # 环境准备（建 venv、装依赖、可选装向量检索）
-│   ├── fetch_embedding_model.py  # 下载嵌入模型（支持 HuggingFace 镜像）
-│   └── check_frontend.py         # 判断前端是否需要重新构建
-├── server/                       # Python 后端（引擎 + FastAPI 接口）
-│   ├── main.py                   # 后端入口：python server/main.py
-│   ├── config.toml               # 配置（世界 / 记忆 / 各 Agent / 嵌入 / 服务）
-│   ├── settings.py               # 配置加载（含 server/.env）
-│   ├── embedding.py              # 嵌入模型（可选依赖，缺失时自动降级到 BM25）
-│   ├── env_manager.py            # 运行环境检测 / 安装 / 模型下载
-│   ├── memory.py                 # 长期记忆：事件 + 向量文件 + BM25 + 遗忘
-│   ├── agents/core.py            # 各 Agent 的提示词与解析
-│   ├── world_session.py          # 单个会话的世界循环（状态 / 时间线 / 更新）
-│   ├── sessions.py               # 会话管理（索引、复制资源、存档点）
-│   └── data/                     # 数据目录（资源库 + 每个会话的运行时数据）
-│       ├── characters/           # 角色卡资源库
-│       ├── worldbooks/           # 世界书资源库
-│       ├── identities/           # 玩家身份卡资源库
-│       ├── sessions/<id>/        # 会话副本与运行时状态（记忆 / 状态 / 时间线）
-│       └── logs/                 # LLM 调用日志与运行事件日志
-└── web/                          # React 前端（Vite + Tailwind + shadcn/ui）
-    ├── src/                      # 组件、状态管理、API 客户端
-    └── dist/                     # 构建产物（已随仓库提供，由后端托管）
+│   ├── setup_env.py              # environment setup (venv, deps, optional vector search)
+│   ├── fetch_embedding_model.py  # download the embedding model (mirror aware)
+│   └── check_frontend.py         # decide whether the front end needs rebuilding
+├── server/                       # Python backend (engine + FastAPI API)
+│   ├── main.py                   # backend entry point: python server/main.py
+│   ├── config.toml               # config (world / memory / agents / embedding / server)
+│   ├── i18n.py                   # server-side message localization
+│   ├── settings.py               # config loading (including server/.env)
+│   ├── embedding.py              # embedding model (optional; falls back to BM25)
+│   ├── env_manager.py            # runtime detection / install / model download
+│   ├── memory.py                 # long-term memory: events + vectors + BM25 + forgetting
+│   ├── agents/core.py            # agent prompts and parsing
+│   ├── world_session.py          # the world loop of one session (state / timeline / updates)
+│   ├── sessions.py               # session management (index, resource copies, savepoints)
+│   └── data/                     # data directory (library + per-session runtime data)
+│       ├── characters/           # character card library
+│       ├── worldbooks/           # worldbook library
+│       ├── identities/           # player identity library
+│       ├── sessions/<id>/        # session copies and runtime state (memory / state / timeline)
+│       └── logs/                 # LLM call logs and runtime event logs
+└── web/                          # React front end (Vite + Tailwind + shadcn/ui)
+    ├── src/                      # components, state, API client, i18n
+    └── dist/                     # build output (ships with the repo, served by the backend)
 ```
 
-数据都在 `server/data/`：资源库（世界书 / 角色卡 / 身份卡）是全局模板，`sessions/<id>/` 是每个会话的副本与运行时数据，`logs/` 是调用日志。
+All data lives in `server/data/`: the library (worldbooks / character cards / identities) holds global templates, `sessions/<id>/` holds each session's copy and runtime data, and `logs/` holds the call logs.
 
 ---
 
-## 移动端访问
+## Phone / tablet access
 
-后端默认监听 `0.0.0.0`。手机与电脑连同一个 Wi-Fi 后，用浏览器打开
-`http://<电脑局域网IP>:8000` 即可（IP 可在「设置 → 个性化 → 📱 手机远程」里直接查看并复制）。
+The backend listens on `0.0.0.0` by default. Put your phone and PC on the same Wi-Fi and open
+`http://<PC LAN IP>:8000` in the browser (the IP is shown and copyable in "Settings → Personalization → 📱 Mobile access").
 
-移动端UI做了部分适配：世界面板默认隐藏为底部抽屉，环境面板在上半屏、对话在下半屏（中间可拖动分隔条），顶部导航可横向滑动。「📱 手机远程」卡片在**手机端**还提供「关闭电脑」按钮
-（30 秒倒计时，可取消；仅 Windows可用）。
+The mobile UI is partly adapted: the world panel is hidden in a bottom drawer by default, the environment panel takes the upper half and the conversation the lower half (with a draggable divider), and the top navigation scrolls horizontally. On **mobile** the "📱 Mobile access" card also offers a "shut down the PC" button
+(30-second countdown, cancellable; Windows only).
 
-> 嵌入模型需要 torch，不方便直接在手机上运行，因此移动端采用「PC 作服务端 + 手机浏览器访问」的方式。
+> The embedding model needs torch, which is awkward to run on a phone, so mobile works as "PC as server + phone browser".
 
 ---
 
-## 日志与排查
+## Logs and troubleshooting
 
-每次 LLM 调用都会记录**完整提示词（system + user）与模型原始返回 / 解析结果**：
+Every LLM call records the **full prompt (system + user) and the raw model output / parsed result**:
 
 ```text
-server/data/logs/llm_YYYY-MM-DD.jsonl      # 每次 LLM 调用
-server/data/logs/events_YYYY-MM-DD.jsonl   # 关键运行事件（非 LLM 调用）
+server/data/logs/llm_YYYY-MM-DD.jsonl      # every LLM call
+server/data/logs/events_YYYY-MM-DD.jsonl   # key runtime events (non-LLM)
 ```
 
-日志界面支持按 agent / 事件类型（`player`、`world_update`、`memory_summary`、`turn_done` …）筛选与内容搜索，提示词与原始返回默认折叠。
+The logs view can filter by agent / event type (`player`, `world_update`, `memory_summary`, `turn_done`, …) and search the content; prompts and raw output are collapsed by default.
 
-如果出现「环境在变化，但角色没有调用」，按顺序检查：
+If "the environment changes but no character reacts", check in order:
 
-1. Player Agent 返回的 `invoke` 里是否真的有角色，如果没有角色，则模型判断此回合没有角色需要回复；
-2. 是否有 `unknown_character`（模型用了中文名但角色卡存的是 id——本项目支持 id / 中文名双向解析）；
-3. 是否有 `frontend_failed` 或 `memory_context_failed`（例如嵌入模型缺失，此时会降级为「暂无相关记忆」，不会卡住对话）；
-4. `llm_*.jsonl` 里对应 agent 的 `raw` 是否是含 `sequence` 的合法 JSON。
+1. Whether the `invoke` list from the Player Agent really contains characters — if not, the model decided nobody needs to reply this turn;
+2. Whether there is an `unknown_character` (the model used a Chinese name while the card stores an id — this project resolves both ways);
+3. Whether there is a `frontend_failed` or `memory_context_failed` (e.g. a missing embedding model, which then degrades to "no related memory" instead of blocking the chat);
+4. Whether the `raw` field of that agent in `llm_*.jsonl` is valid JSON containing `sequence`.
 
-日志默认只保留最近若干天（`config.toml` 的 `[logs] retention_days`）。
+Logs are kept for the last few days by default (`[logs] retention_days` in `config.toml`).
 
 ---
 
-## 技术栈
+## Tech stack
 
-![系统架构](./docs/architecture.png)
+![architecture](./docs/architecture.png)
 
-| 层 | 技术 |
+| Layer | Technology |
 | --- | --- |
-| 前端 | React 19 · Vite · TypeScript · Tailwind CSS · shadcn/ui（base-ui）· zustand · recharts |
-| 后端 | Python 3.11+ · FastAPI · uvicorn · SSE 流式接口 |
-| 记忆 | rank-bm25 · jieba · numpy（向量检索为可选的 sentence-transformers） |
-| 模型 | DeepSeek Chat（OpenAI 兼容）· 可选本地嵌入 `BAAI/bge-base-zh-v1.5` |
-| 存储 | JSON 文件（资源库 / 会话副本 / 状态 / 时间线 / 日志）+ 本地向量文件 |
+| Frontend | React 19 · Vite · TypeScript · Tailwind CSS · shadcn/ui (base-ui) · zustand · recharts |
+| Backend | Python 3.11+ · FastAPI · uvicorn · SSE streaming |
+| Memory | rank-bm25 · jieba · numpy (vector search needs the optional sentence-transformers) |
+| Model | DeepSeek Chat (OpenAI compatible) · optional local embedding `BAAI/bge-base-zh-v1.5` |
+| Storage | JSON files (library / session copies / state / timeline / logs) + local vector files |
 
 ---
 
-## 已知问题
+## Known issues
 
-- 由于需要Player Agent对角色行为进行调度（且该Agent默认开启low思考），回复延迟略有增加，尤其是在还没有kvcache时。
-- 项目的时空一致性仍无法完全保证，人物关系网也不够完善（角色之间可能「不认识」或搞错对方背景）。
-- Chrome 深色模式会影响部分界面的可见度；移动端 UI 仍可能出现小问题。
-- 「重写 / 回溯」之后的消息编辑等功能可能存在问题。由于世界状态、环境等跟随时间发生变化，在多轮回溯消息后，世界信息不会回溯，因此尽可能避免多轮回溯消息。
-- 世界模拟本质上是低精度拟合：要精确模拟需要像 *《Generative Agents: Interactive Simulacra of Human Behaviuor》* 那样对全部角色做全时段规划与模拟，几乎无法实时运行、Token 消耗也过大；本项目在精度与可用性之间做了折中（角色分核心 / 普通、不实时模拟所有角色、选择性对角色生成记忆与规划、规划被打断后也不立即更新）。
-- 有些数据改动后需要等到下一回合才会更新显示。
-- 多次连续使用「故事模式」，将导致环境、角色等不会更新，进而影响世界一致性。
-- 同一个角色每天的规划可能出现高度相似的问题，多样性较差。
-
----
-
-## 版本历程
-
-1. 基本的小说 RAG
-2. 树状记忆结构：针对信息的长距离依赖问题
-3. 角色扮演、记忆的构建和遗忘
-4. 「世界」的构建：多 Agent 协作
-5. UI 交互：从命令行到GUI
-6. 运行时优化：前缀稳定化、精简提示词、尽可能并行更新
-7. 功能优化与 BUG 修复
+- Because the Player Agent schedules character behaviour (with low reasoning effort by default), replies are slightly slower to start, especially when the KV cache is cold.
+- Spatio-temporal consistency is not fully guaranteed and the relationship graph is incomplete (characters may "not know" each other or get each other's backgrounds wrong).
+- Chrome dark mode affects the visibility of some UI parts; the mobile UI may still have rough edges.
+- Editing messages after "rewrite / rewind" may misbehave. World state and the environment follow time, so after rewinding several turns the world information is not rewound either — avoid rewinding many turns.
+- World simulation is inherently a low-precision approximation: doing it exactly would require full-time planning and simulation of every character, as in *Generative Agents: Interactive Simulacra of Human Behavior*, which is nearly impossible to run in real time and costs far too many tokens. This project trades precision for usability (core vs regular characters, no real-time simulation of everyone, selective memory and planning, plans that are not immediately refreshed when interrupted).
+- Some data changes only show up on the next turn.
+- Using story mode repeatedly prevents the environment and characters from updating, hurting world consistency.
+- The same character's daily plan can be very similar from day to day.
 
 ---
 
-## 其它
+## Version history
 
-- 代码以 [MIT License](LICENSE) 开源。
-- 项目主体代码由 DeepSeek-V4-Flash 与 DeepSeek-V4-Flash-Vision-Exp 完成。
-- 仓库默认附带《蔚蓝档案》的世界书与主要角色卡（由网络资料整理），**仅用于演示**，版权归原方所有。
+1. A basic novel RAG
+2. Tree-structured memory: long-range information dependencies
+3. Role-play, memory construction and forgetting
+4. Building "the world": multi-agent collaboration
+5. UI: from command line to GUI
+6. Runtime optimisation: prefix stabilisation, leaner prompts, updates in parallel
+7. Feature work and bug fixes
+8. Full English support with a language switch, plus bilingual docs
+
+---
+
+## Notes
+
+- Open source under the [MIT License](LICENSE).
+- The bulk of the code was written by DeepSeek-V4-Flash and DeepSeek-V4-Flash-Vision-Exp.
+- The repo bundles a *Blue Archive* worldbook and the main character cards (compiled from public sources) **for demonstration only**; all rights belong to their original owners.

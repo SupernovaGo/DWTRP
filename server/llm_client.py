@@ -14,6 +14,7 @@ import uuid
 import requests
 
 from llm_logger import log_llm_call
+from i18n import tr
 from settings import CONFIG, ENV_PATH, find_api_key
 
 
@@ -285,18 +286,19 @@ class LLMClient:
         if not self.api_key:
             env_name = CONFIG["LLM"].get("api_key_env", "DEEPSEEK_API_KEY")
             raise RuntimeError(
-                "未配置 DeepSeek API Key（对话/初始化/更新都需要它）。请任选其一：\n"
-                "  1) 界面「设置 → 连接 / 高级」填写（保存到 server/.env，立即生效）\n"
-                f"  2) 编辑文件 {ENV_PATH} 写入 {env_name}=sk-xxx\n"
-                f"  3) 设置环境变量 {env_name}\n"
-                f"注意：若环境变量 {env_name} 存在但是空字符串，会被视为未配置。")
+                tr("未配置 DeepSeek API Key（对话/初始化/更新都需要它）。请任选其一：\n"
+                   "  1) 界面「设置 → 连接 / 高级」填写（保存到 server/.env，立即生效）\n"
+                   "  2) 编辑文件 {path} 写入 {env}=sk-xxx\n"
+                   "  3) 设置环境变量 {env}\n"
+                   "注意：若环境变量 {env} 存在但是空字符串，会被视为未配置。",
+                   path=ENV_PATH, env=env_name))
         try:
             self.api_key.encode("latin-1")
         except UnicodeEncodeError:
             env_name = CONFIG["LLM"].get("api_key_env", "DEEPSEEK_API_KEY")
             raise RuntimeError(
-                f"{env_name} 不是有效的 Key（包含非 ASCII 字符）："
-                f"请在「设置 → 连接 / 高级」重新填写，或检查 {ENV_PATH}。")
+                tr("{env} 不是有效的 Key（包含非 ASCII 字符）：请在「设置 → 连接 / 高级」重新填写，或检查 {path}。",
+                   env=env_name, path=ENV_PATH))
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -328,4 +330,4 @@ class LLMClient:
                 last_err = e
                 if attempt + 1 < self.retries:
                     time.sleep(2 * (attempt + 1))
-        raise RuntimeError(f"{agent_name} LLM 调用失败：{last_err}")
+        raise RuntimeError(tr("{agent} LLM 调用失败：{err}", agent=agent_name, err=last_err))

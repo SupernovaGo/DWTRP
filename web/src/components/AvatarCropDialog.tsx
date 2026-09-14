@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/store/toastStore'
 import { avatarUrl } from '@/lib/format'
+import { t } from '@/i18n'
 
 interface Props {
   open: boolean
@@ -80,7 +81,7 @@ export default function AvatarCropDialog({ open, onClose, onApply, defaultValue 
   const apply = () => {
     const img = imgRef.current
     if (!img || !natural.w || !render.w || sel.size <= 0) {
-      toast.push('无法裁剪', '请先选择一张图片', 'error')
+      toast.push(t('无法裁剪'), t('请先选择一张图片'), 'error')
       return
     }
     const scale = natural.w / render.w
@@ -107,11 +108,11 @@ export default function AvatarCropDialog({ open, onClose, onApply, defaultValue 
     e.target.value = ''
     if (!file) return
     if (!file.type.startsWith('image/')) {
-      toast.push('格式不支持', '请选择图片文件', 'error')
+      toast.push(t('格式不支持'), t('请选择图片文件'), 'error')
       return
     }
     if (file.size > 8 * 1024 * 1024) {
-      toast.push('图片过大', '请选择小于 8MB 的图片', 'error')
+      toast.push(t('图片过大'), t('请选择小于 8MB 的图片'), 'error')
       return
     }
     const url = URL.createObjectURL(file)
@@ -130,7 +131,7 @@ export default function AvatarCropDialog({ open, onClose, onApply, defaultValue 
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[92vh] w-[min(96vw,520px)] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>🖼️ 选择头像区域</DialogTitle>
+          <DialogTitle>{t('🖼️ 选择头像区域')}</DialogTitle>
         </DialogHeader>
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
           <div className="rounded-lg border border-border/60 bg-muted/30 p-2">
@@ -140,7 +141,7 @@ export default function AvatarCropDialog({ open, onClose, onApply, defaultValue 
                   ref={imgRef}
                   src={src}
                   onLoad={onImageLoad}
-                  alt="游戏头像裁剪"
+                  alt={t("游戏头像裁剪")}
                   className="block max-h-[340px] w-auto rounded-md object-contain"
                   draggable={false}
                 />
@@ -149,18 +150,18 @@ export default function AvatarCropDialog({ open, onClose, onApply, defaultValue 
                 </div>
               </div>
             ) : (
-              <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">请选择一张图片</div>
+              <div className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">{t('请选择一张图片')}</div>
             )}
           </div>
           <p className="text-xs text-muted-foreground">
-            拖动方块调整位置，拖动右下角圆点调整大小。头像会裁成正方形（256×256）。
+            {t('拖动方块调整位置，拖动右下角圆点调整大小。头像会裁成正方形（256×256）。')}
           </p>
         </div>
         <DialogFooter>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onFile} />
-          <Button variant="ghost" onClick={pick}>选择图片</Button>
-          <Button variant="ghost" onClick={onClose}>取消</Button>
-          <Button onClick={apply} disabled={!src}>应用</Button>
+          <Button variant="ghost" onClick={pick}>{t('选择图片')}</Button>
+          <Button variant="ghost" onClick={onClose}>{t('取消')}</Button>
+          <Button onClick={apply} disabled={!src}>{t('应用')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

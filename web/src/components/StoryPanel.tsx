@@ -23,12 +23,13 @@ import {
   normalizeAction,
   avatarUrl,
 } from '@/lib/format'
+import { t } from '@/i18n'
 
 function stripSegMarkers(type: string, text: string): string {
-  let t = (text || '').trim()
-  if (type === 'action') t = t.replace(/^\*+|\*+$/g, '')
-  else t = t.replace(/^「+|」+$/g, '')
-  return t
+  let s = (text || '').trim()
+  if (type === 'action') s = s.replace(/^\*+|\*+$/g, '')
+  else s = s.replace(/^「+|」+$/g, '')
+  return s
     .replace(/\*{2,}/g, '*')
     .replace(/「{2,}/g, '「')
     .replace(/」{2,}/g, '」')
@@ -133,7 +134,7 @@ function formatTimeMarker(input?: string): string {
     const m = parseInt(hm[2], 10)
     const pm = h >= 12
     const prefix = time.slice(0, hm.index)
-    time = `${prefix}${pm ? '下午' : '上午'}${h % 12 || 12}:${pad(m)}`
+    time = `${prefix}${pm ? t('下午') : t('上午')}${h % 12 || 12}:${pad(m)}`
   }
   return c.date ? `${c.date} ${time}` : time
 }
@@ -197,9 +198,9 @@ function WorldCard({ entry }: { entry: Extract<LogEntry, { kind: 'world_update' 
   return (
     <Card className="my-2 border-primary/20 bg-primary/5">
       <CardContent className="px-4 py-3 text-sm">
-        <p className="mb-1 font-semibold text-primary">🌍 世界更新</p>
+        <p className="mb-1 font-semibold text-primary">{t('🌍 世界更新')}</p>
         {entry.changes.length === 0 ? (
-          <p className="text-muted-foreground">本时间段没有值得记录的显著变化。</p>
+          <p className="text-muted-foreground">{t('本时间段没有值得记录的显著变化。')}</p>
         ) : (
           <ul className="space-y-0.5">
             {entry.changes.map((c, i) => (
@@ -303,7 +304,7 @@ function EntryView({ entry }: { entry: LogEntry }) {
     return (
       <div className="mx-1 my-1 overflow-hidden rounded-2xl border border-border/60 bg-card/30">
         <div className="px-3 py-1 text-[11px] font-semibold text-violet-700 dark:text-violet-300">
-          📖 剧情总结
+          {t('📖 剧情总结')}
         </div>
         <div className="space-y-1.5 px-3 pb-2">
           {segs.map((s, i) => {
@@ -363,7 +364,7 @@ function EntryView({ entry }: { entry: LogEntry }) {
   if (entry.kind === 'character_update') {
     return (
       <div className="my-2 text-center text-xs text-muted-foreground">
-        🔄 已更新角色：{entry.updated.join('、') || '无'}
+        {t('🔄 已更新角色：')}{entry.updated.join(t('、')) || t('无')}
       </div>
     )
   }
@@ -373,7 +374,7 @@ function EntryView({ entry }: { entry: LogEntry }) {
   if (entry.kind === 'forget') {
     return (
       <div className="my-1 text-center text-xs text-muted-foreground">
-        🗑️ {entry.character} 已执行容量遗忘，当前 {entry.event_count} 个事件。
+        {t('🗑️ {character} 已执行容量遗忘，当前 {count} 个事件。', { character: entry.character, count: entry.event_count })}
       </div>
     )
   }
@@ -408,16 +409,16 @@ function MessageActions({
   return (
     <div className="mb-0.5 flex shrink-0 justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100 max-md:opacity-100">
       <Button size="xs" variant="ghost" className="h-6 px-2 text-xs text-muted-foreground max-md:h-9 max-md:px-3" onClick={() => onEdit(entry)}>
-        编辑
+        {t('编辑')}
       </Button>
       <Button size="xs" variant="ghost" className="h-6 px-2 text-xs text-muted-foreground max-md:h-9 max-md:px-3" onClick={() => onDelete(entry)}>
-        删除
+        {t('删除')}
       </Button>
       <Button size="xs" variant="ghost" className="h-6 px-2 text-xs text-muted-foreground max-md:h-9 max-md:px-3" onClick={() => onSave(entry)}>
-        存点
+        {t('存点')}
       </Button>
       <Button size="xs" variant="ghost" className="h-6 px-2 text-xs text-amber-700 dark:text-amber-300/80 max-md:h-9 max-md:px-3" onClick={() => onBranch(entry)}>
-        从此开始
+        {t('从此开始')}
       </Button>
     </div>
   )
@@ -488,42 +489,42 @@ export default function StoryPanel() {
   const onDelete = async (entry: LogEntry) => {
     const idx = findHistoryIndex(entry, history)
     if (idx < 0) {
-      toast.push('删除失败', '未找到对应的历史条目', 'error')
+      toast.push(t('删除失败'), t('未找到对应的历史条目'), 'error')
       return
     }
-    if (!window.confirm('确定删除这条消息？')) return
+    if (!window.confirm(t('确定删除这条消息？'))) return
     await deleteHistory(idx)
     await reload()
-    toast.push('已删除消息', '', 'success')
+    toast.push(t('已删除消息'), '', 'success')
   }
 
   const onBranch = async (entry: LogEntry) => {
     const idx = findHistoryIndex(entry, history)
     if (idx < 0) {
-      toast.push('重开失败', '未找到对应的历史条目', 'error')
+      toast.push(t('重开失败'), t('未找到对应的历史条目'), 'error')
       return
     }
-    if (!window.confirm('从这条消息之后重新开始？\n世界状态不会回溯。')) return
+    if (!window.confirm(t('从这条消息之后重新开始？\n世界状态不会回溯。'))) return
     await branchHistory(idx)
     await reload()
-    toast.push('已从此处重新开始', '历史已裁剪，世界状态保持不变', 'success')
+    toast.push(t('已从此处重新开始'), t('历史已裁剪，世界状态保持不变'), 'success')
   }
 
   const onSave = async (entry: LogEntry) => {
     const idx = findHistoryIndex(entry, history)
     if (idx < 0) {
-      toast.push('保存存档点失败', '未找到对应的历史条目', 'error')
+      toast.push(t('保存存档点失败'), t('未找到对应的历史条目'), 'error')
       return
     }
     await createSnapshotFromHistory(idx)
-    toast.push('已创建存档点', '可从消息操作或存档面板从此处回溯', 'success')
+    toast.push(t('已创建存档点'), t('可从消息操作或存档面板从此处回溯'), 'success')
   }
 
   const saveEdit = async () => {
     if (!editing) return
     const idx = findHistoryIndex(editing, history)
     if (idx < 0) {
-      toast.push('编辑失败', '未找到对应的历史条目', 'error')
+      toast.push(t('编辑失败'), t('未找到对应的历史条目'), 'error')
       return
     }
     let name = ''
@@ -536,7 +537,7 @@ export default function StoryPanel() {
     // 双保险：先应用接口返回的最新状态，再从服务器重拉一次，确保显示与上下文一致。
     if (r.state) useApp.getState().applyState(r.state)
     await useApp.getState().loadSession()
-    toast.push('已更新消息', '', 'success')
+    toast.push(t('已更新消息'), '', 'success')
   }
 
   const saveStoryEdit = async () => {
@@ -548,7 +549,7 @@ export default function StoryPanel() {
     setStoryEditing(null)
     if (r.state) useApp.getState().applyState(r.state)
     await useApp.getState().loadSession()
-    toast.push('已更新剧情', '', 'success')
+    toast.push(t('已更新剧情'), '', 'success')
   }
 
   // 智能滚动：只有用户本来就停在底部时才自动滚到底；在看上方旧消息时不打断。
@@ -572,9 +573,9 @@ export default function StoryPanel() {
             type="button"
             className="flex items-center gap-1 rounded-full border border-border/60 bg-background/80 px-2 py-0.5 text-[11px] text-muted-foreground shadow-sm backdrop-blur hover:text-foreground"
             onClick={() => setDayMenuOpen((v) => !v)}
-            title="按天查看历史"
+            title={t("按天查看历史")}
           >
-            <span>{effectiveDay === 'all' ? '全部' : effectiveDay === 'legacy' ? '更早' : effectiveDay}</span>
+            <span>{effectiveDay === 'all' ? t('全部') : effectiveDay === 'legacy' ? t('更早') : effectiveDay}</span>
             <span className="text-[9px]">▾</span>
           </button>
           {dayMenuOpen && (
@@ -582,7 +583,7 @@ export default function StoryPanel() {
               {(latestDay ?? null) && (
                 <button type="button" className="block w-full truncate rounded px-2 py-1 text-left text-sm hover:bg-muted/50"
                   onClick={() => { setDayFilter(latestDay); setDayMenuOpen(false) }}>
-                  {latestDay}（最新）
+                  {t('{day}（最新）', { day: latestDay })}
                 </button>
               )}
               {dayInfo.order.map((d) => (
@@ -594,12 +595,12 @@ export default function StoryPanel() {
               {dayInfo.hasLegacy && (
                 <button type="button" className="block w-full truncate rounded px-2 py-1 text-left text-sm hover:bg-muted/50"
                   onClick={() => { setDayFilter('legacy'); setDayMenuOpen(false) }}>
-                  更早（无时间标记）
+                  {t('更早（无时间标记）')}
                 </button>
               )}
               <button type="button" className="block w-full truncate rounded px-2 py-1 text-left text-sm hover:bg-muted/50"
                 onClick={() => { setDayFilter('all'); setDayMenuOpen(false) }}>
-                全部
+                {t('全部')}
               </button>
             </div>
           )}
@@ -608,7 +609,7 @@ export default function StoryPanel() {
       {visibleLog.length === 0 && (
         <div className="flex h-full flex-col items-center justify-center text-center">
           <div className="text-6xl">✨</div>
-          <p className="mt-4 text-base text-muted-foreground">世界尚未开始，在下方输入你的想法吧。</p>
+          <p className="mt-4 text-base text-muted-foreground">{t('世界尚未开始，在下方输入你的想法吧。')}</p>
         </div>
       )}
       <div className="space-y-3">
@@ -646,7 +647,7 @@ export default function StoryPanel() {
                 <div className="min-w-0 flex-1">
                   <div className="mb-1 text-sm font-semibold text-violet-700 dark:text-violet-300">{displayNameFor(typing.name, typingSurname, showSurname)}</div>
                   <div className="inline-block max-w-full max-h-40 overflow-hidden whitespace-pre-wrap rounded-2xl rounded-tl-sm bg-card px-4 py-2 text-[15px] shadow-sm">
-                    {typing.text || '…'}
+                    {typing.text || t('…')}
                     <span className="typing-caret">▍</span>
                   </div>
                 </div>
@@ -673,12 +674,12 @@ export default function StoryPanel() {
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>编辑消息</DialogTitle>
+            <DialogTitle>{t('编辑消息')}</DialogTitle>
           </DialogHeader>
           <Textarea className="min-h-32 max-h-[45vh] resize-none overflow-y-auto text-base" value={editText} onChange={(e) => setEditText(e.target.value)} />
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditing(null)}>取消</Button>
-            <Button onClick={saveEdit}>保存</Button>
+            <Button variant="ghost" onClick={() => setEditing(null)}>{t('取消')}</Button>
+            <Button onClick={saveEdit}>{t('保存')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -686,11 +687,11 @@ export default function StoryPanel() {
       <Dialog open={!!storyEditing} onOpenChange={(o) => !o && setStoryEditing(null)}>
         <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>编辑剧情总结</DialogTitle>
+            <DialogTitle>{t('编辑剧情总结')}</DialogTitle>
           </DialogHeader>
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-1">
             <div>
-              <div className="mb-1 text-xs text-muted-foreground">剧情文本</div>
+              <div className="mb-1 text-xs text-muted-foreground">{t('剧情文本')}</div>
               <Textarea
                 className="min-h-40 max-h-[40vh] resize-none overflow-y-auto text-base"
                 value={storyEditing?.text ?? ''}
@@ -698,7 +699,7 @@ export default function StoryPanel() {
               />
             </div>
             <div>
-              <div className="mb-1 text-xs text-muted-foreground">本回合剧情指令（重写会遵循它）</div>
+              <div className="mb-1 text-xs text-muted-foreground">{t('本回合剧情指令（重写会遵循它）')}</div>
               <Textarea
                 className="min-h-16 max-h-[18vh] resize-none overflow-y-auto text-sm"
                 value={storyEditing?.directive ?? ''}
@@ -707,8 +708,8 @@ export default function StoryPanel() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setStoryEditing(null)}>取消</Button>
-            <Button onClick={saveStoryEdit}>保存</Button>
+            <Button variant="ghost" onClick={() => setStoryEditing(null)}>{t('取消')}</Button>
+            <Button onClick={saveStoryEdit}>{t('保存')}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

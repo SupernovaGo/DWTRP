@@ -5,14 +5,15 @@ import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react'
 import { avatarUrl } from '@/lib/format'
+import { t } from '@/i18n'
 
 type Card = Record<string, any>
 
 const REQUIRED: Array<[string, string]> = [
-  ['name', '名字'],
-  ['intro', '简介'],
-  ['personality', '性格'],
-  ['appearance', '默认外观'],
+  ['name', t('名字')],
+  ['intro', t('简介')],
+  ['personality', t('性格')],
+  ['appearance', t('默认外观')],
 ]
 
 interface Props {
@@ -55,7 +56,7 @@ function StringListField({ label, value, onChange }: {
   }, [value, focused])
   return (
     <label className="block text-xs">
-      <span className="text-muted-foreground">{label}（每行一个）</span>
+      <span className="text-muted-foreground">{label}{t('（每行一个）')}</span>
       <Textarea className="mt-1 min-h-16 w-full resize-none" rows={3}
         value={draft}
         onFocus={() => setFocused(true)}
@@ -78,21 +79,21 @@ function RelationshipEditor({ value, onChange }: {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">关系网（target / 称呼 / 关系 / 好感度 / 详述）</span>
+        <span className="text-muted-foreground">{t('关系网（target / 称呼 / 关系 / 好感度 / 详述）')}</span>
         <Button size="xs" variant="ghost" onClick={() => onChange([...list, { target: '', address: '', relation: '', affection: '', detail: '' }])}>
-          <Plus className="size-3" /> 加一条
+          <Plus className="size-3" /> {t('加一条')}
         </Button>
       </div>
       {list.map((r, i) => (
         <div key={i} className="space-y-1.5 rounded-lg border border-border/60 bg-background/40 p-2">
           <div className="grid grid-cols-2 gap-1.5">
-            <Input className="h-7 text-xs" placeholder="对方名 target" value={r.target ?? ''} onChange={(e) => setAt(i, 'target', e.target.value)} />
-            <Input className="h-7 text-xs" placeholder="称呼 address" value={r.address ?? ''} onChange={(e) => setAt(i, 'address', e.target.value)} />
-            <Input className="h-7 text-xs" placeholder="关系 relation" value={r.relation ?? ''} onChange={(e) => setAt(i, 'relation', e.target.value)} />
-            <Input className="h-7 text-xs" placeholder="好感度 affection(0~1)" value={r.affection ?? ''} onChange={(e) => setAt(i, 'affection', e.target.value)} />
+            <Input className="h-7 text-xs" placeholder={t("对方名 target")} value={r.target ?? ''} onChange={(e) => setAt(i, 'target', e.target.value)} />
+            <Input className="h-7 text-xs" placeholder={t("称呼 address")} value={r.address ?? ''} onChange={(e) => setAt(i, 'address', e.target.value)} />
+            <Input className="h-7 text-xs" placeholder={t("关系 relation")} value={r.relation ?? ''} onChange={(e) => setAt(i, 'relation', e.target.value)} />
+            <Input className="h-7 text-xs" placeholder={t("好感度 affection(0~1)")} value={r.affection ?? ''} onChange={(e) => setAt(i, 'affection', e.target.value)} />
           </div>
           <div className="flex items-start gap-1.5">
-            <Input className="h-7 flex-1 text-xs" placeholder="详述 detail" value={r.detail ?? ''} onChange={(e) => setAt(i, 'detail', e.target.value)} />
+            <Input className="h-7 flex-1 text-xs" placeholder={t("详述 detail")} value={r.detail ?? ''} onChange={(e) => setAt(i, 'detail', e.target.value)} />
             <Button size="icon-xs" variant="ghost" className="text-red-500" onClick={() => onChange(list.filter((_, j) => j !== i))}>
               <X className="size-3" />
             </Button>
@@ -111,8 +112,8 @@ function SpeechStyleEditor({ value, onChange }: {
   const patch = (k: string, v: any) => onChange({ ...style, [k]: v })
   return (
     <div className="space-y-2">
-      <Field label="描述 description" value={style.description ?? ''} rows={2} onChange={(v) => patch('description', v)} />
-      <StringListField label="示例 examples" value={style.examples ?? []} onChange={(v) => patch('examples', v)} />
+      <Field label={t("描述 description")} value={style.description ?? ''} rows={2} onChange={(v) => patch('description', v)} />
+      <StringListField label={t("示例 examples")} value={style.examples ?? []} onChange={(v) => patch('examples', v)} />
     </div>
   )
 }
@@ -129,7 +130,7 @@ export default function CharacterCardForm({ card, onChange, avatar, onOpenAvatar
       .includes(k) && !recommendedKeys.includes(k))
 
   const addCustom = () => {
-    const k = window.prompt('自定义字段名（英文键）', 'custom_field')
+    const k = window.prompt(t('自定义字段名（英文键）'), 'custom_field')
     if (!k) return
     set(k, '')
   }
@@ -153,10 +154,10 @@ export default function CharacterCardForm({ card, onChange, avatar, onOpenAvatar
           </div>
         )}
         <div className="flex-1">
-          <div className="text-sm font-semibold">头像（推荐字段）</div>
-          <p className="text-xs text-muted-foreground">导入本地图片并裁剪方形区域。</p>
+          <div className="text-sm font-semibold">{t('头像（推荐字段）')}</div>
+          <p className="text-xs text-muted-foreground">{t('导入本地图片并裁剪方形区域。')}</p>
         </div>
-        <Button size="sm" variant="outline" onClick={onOpenAvatar}>导入头像</Button>
+        <Button size="sm" variant="outline" onClick={onOpenAvatar}>{t('导入头像')}</Button>
       </div>
 
       {/* 必填 */}
@@ -171,12 +172,12 @@ export default function CharacterCardForm({ card, onChange, avatar, onOpenAvatar
           />
         ))}
         <label className="block text-xs">
-          <span className="text-muted-foreground">标签 tags（逗号分隔）</span>
+          <span className="text-muted-foreground">{t('标签 tags（逗号分隔）')}</span>
           <Input className="mt-1 h-8" value={(card.tags || []).join(',')}
             onChange={(e) => set('tags', e.target.value.split(',').map((t) => t.trim()).filter(Boolean))} />
         </label>
         <label className="flex items-center justify-between text-xs">
-          <span>是否为核心角色 is_core</span>
+          <span>{t('是否为核心角色 is_core')}</span>
           <Switch checked={Boolean(card.is_core)} onCheckedChange={(v) => set('is_core', v)} />
         </label>
       </div>
@@ -186,14 +187,14 @@ export default function CharacterCardForm({ card, onChange, avatar, onOpenAvatar
         <button type="button" className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-200"
           onClick={() => setRecOpen((v) => !v)}>
           {recOpen ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
-          推荐字段{recFilled > 0 ? <span className="ml-1 text-muted-foreground">（已填 {recFilled}）</span> : null}
+          {t('推荐字段')}{recFilled > 0 ? <span className="ml-1 text-muted-foreground">{t('（已填 {n}）', { n: recFilled })}</span> : null}
         </button>
         {recOpen && (
           <div className="space-y-2 border-t border-border/60 p-2">
-            <Field label="姓 surname" value={card.surname ?? ''} onChange={(v) => set('surname', v)} />
-            <StringListField label="别名 aliases" value={card.aliases ?? []} onChange={(v) => set('aliases', v)} />
+            <Field label={t("姓 surname")} value={card.surname ?? ''} onChange={(v) => set('surname', v)} />
+            <StringListField label={t("别名 aliases")} value={card.aliases ?? []} onChange={(v) => set('aliases', v)} />
             <div className="rounded-lg border border-border/60 bg-background/40 p-2">
-              <div className="mb-1 text-xs text-muted-foreground">说话风格 speech_style</div>
+              <div className="mb-1 text-xs text-muted-foreground">{t('说话风格 speech_style')}</div>
               <SpeechStyleEditor value={card.speech_style} onChange={(v) => set('speech_style', v)} />
             </div>
             <RelationshipEditor value={card.relationships ?? []} onChange={(v) => set('relationships', v)} />
@@ -206,7 +207,7 @@ export default function CharacterCardForm({ card, onChange, avatar, onOpenAvatar
         <button type="button" className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs font-semibold text-violet-700 dark:text-violet-200"
           onClick={() => setCustomOpen((v) => !v)}>
           {customOpen ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
-          自定义字段（{nonStandard.length}）
+          {t('自定义字段（{n}）', { n: nonStandard.length })}
         </button>
         {customOpen && (
           <div className="space-y-2 border-t border-border/60 p-2">
@@ -234,7 +235,7 @@ export default function CharacterCardForm({ card, onChange, avatar, onOpenAvatar
                 </div>
               )
             })}
-            <Button size="xs" variant="outline" onClick={addCustom}><Plus className="size-3" /> 添加自定义字段</Button>
+            <Button size="xs" variant="outline" onClick={addCustom}><Plus className="size-3" /> {t('添加自定义字段')}</Button>
           </div>
         )}
       </div>

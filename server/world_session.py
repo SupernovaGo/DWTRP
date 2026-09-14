@@ -31,6 +31,7 @@ from agents.core import (
 from characters import CharacterStore
 import card_schema
 from embedding import Embedder
+from i18n import tr
 from llm_client import LLMClient
 from llm_logger import log_event, set_request_session
 from memory import CharacterMemory
@@ -497,7 +498,7 @@ class WorldSession:
         if self._snap_counter >= interval:
             self._snap_counter = 0
             try:
-                self.save_snapshot(label="自动存档", auto=True)
+                self.save_snapshot(label=tr("自动存档"), auto=True)
             except Exception:  # noqa: BLE001
                 pass
 
@@ -589,13 +590,13 @@ class WorldSession:
         重写结果残留在角色上下文的“近期事件”里。
         """
         if not self.rewind_stack:
-            return {"ok": False, "error": "没有可重写的回合（可先在设置里开启回合回退）"}
+            return {"ok": False, "error": tr("没有可重写的回合（可先在设置里开启回合回退）")}
         # 丢弃本回合尚未落盘的近期记忆（重写会重新生成，避免旧版本被写入）。
         self._pending_memory_ops = {}
         snap = self.rewind_stack[-1]
         ok = self.restore_snapshot_into_current(snap)
         if not ok:
-            return {"ok": False, "error": "当前会话不支持回退"}
+            return {"ok": False, "error": tr("当前会话不支持回退")}
         self.structured_history = list(snap.get("structured_history") or [])
         # 目标回合序号 = 快照时刻的回合数 + 1（下一回合将被重新执行的回合）。
         target_seq = int(snap.get("turn_counter", 0) or 0) + 1
@@ -630,9 +631,9 @@ class WorldSession:
     def edit_story_turn(self, scene_index: int, text: str, directive: str) -> dict:
         """编辑一条剧情总结：更新文本与指令，并让重写遵循编辑后的指令。"""
         if scene_index < 0 or scene_index >= len(self.scene_history):
-            return {"ok": False, "error": "历史条目不存在"}
+            return {"ok": False, "error": tr("历史条目不存在")}
         if not self.scene_history[scene_index].startswith("[剧情总结]"):
-            return {"ok": False, "error": "该条目不是剧情总结"}
+            return {"ok": False, "error": tr("该条目不是剧情总结")}
         text = (text or "").strip()
         directive = (directive or "").strip()
         self.scene_history[scene_index] = f"[剧情总结] {text}"
@@ -902,7 +903,7 @@ class WorldSession:
         turn_seq = self._turn_counter
         prev_time = self.world.world_clock_iso()
         turn_time = self.world.perception.get("time") or ""
-        self._emit("processing", {"text": "正在谱写剧情…"})
+        self._emit("processing", {"text": tr("正在谱写剧情…")})
 
         # 世界书命中：以玩家指令为准（空指令则无命中）。
         self._register_world_entry_hits(directive)
@@ -930,13 +931,13 @@ class WorldSession:
         except Exception as e:  # noqa: BLE001
             log_event(self.request_id or "", "story_failed", {"error": str(e)},
                       session_id=self.session_id)
-            self._emit("error", {"text": f"剧情生成失败：{e}"})
+            self._emit("error", {"text": tr("剧情生成失败：{err}", err=e)})
             return {"player_message": None, "events": self.turn_events,
                     "state": self.snapshot_state()}
 
         text = (out.get("text") or "").strip()
         if not text:
-            self._emit("error", {"text": "剧情生成结果为空"})
+            self._emit("error", {"text": tr("剧情生成结果为空")})
             return {"player_message": None, "events": self.turn_events,
                     "state": self.snapshot_state()}
 
@@ -1034,12 +1035,12 @@ class WorldSession:
         if one_shot_directive:
             directive_text = ((directive_text + "\n" if directive_text else "")
                               + one_shot_directive).strip()
-            self._emit("hint", {"text": f"你下达了世界指令，本回合生效：{one_shot_directive}"})
+            self._emit("hint", {"text": tr("你下达了世界指令，本回合生效：{text}", text=one_shot_directive)})
         self._turn_counter += 1
         turn_seq = self._turn_counter
         self._register_world_entry_hits(player_input)
         world_entry_text = self._world_entry_context()
-        self._emit("processing", {"text": "正在理解你的行动…"})
+        self._emit("processing", {"text": tr("正在理解你的行动…")})
         recent_events = self._recent_events_block(self.scene_history)
         player_out = self.player_agent.process(
             player_input, self.scene_history, request_id=self.request_id,
@@ -1088,7 +1089,7 @@ class WorldSession:
         # 先在“角色前台”串行生成所有角色（后续角色能看到前面角色的表现），
         # 并把它们的输出即时写入 scene_history，供随后调用的环境 Agent 感知整场。
         for ri in resolved_invoke:
-            self._emit("processing", {"text": f"{ri['name']} 正在回应…", "character": ri["cid"]})
+            self._emit("processing", {"text": tr("{name} 正在回应…", name=ri["name"]), "character": ri["cid"]})
             scene_context = "\n".join(scene_context_parts)
             raw_front = self.front_agent.act(
                 ri["cid"], player_input, scene_context=scene_context, info=ri["info"],
@@ -1535,7 +1536,7 @@ class WorldSession:
             "detail": f"{memory.character_id} 近期记忆已达 {total} 字，正在总结旧部分……",
         })
         context_info = self._memory_summary_context(memory.character_id)
-        self._emit("processing", {"text": "正在后台整理并总结记忆…（可继续发送）"})
+        self._emit("processing", {"text": tr("正在后台整理并总结记忆…（可继续发送）")})
         # 后台总结：不阻塞本回合，总结期间用户仍可继续发消息、调用各模型。
         threading.Thread(
             target=self._summarize_worker,
@@ -1707,7 +1708,7 @@ class WorldSession:
         # 手动更新也可能与后台更新并发，统一在此处加锁。
         with self._update_lock:
             if CONFIG["UPDATE_NOTICE"] and emit:
-                self._emit("processing", {"text": "正在更新世界…"})
+                self._emit("processing", {"text": tr("正在更新世界…")})
             self.new_request_id()  # 手动/自动更新都各用一个 request_id，保证日志归属正确会话
             summary = fresh_character_summary if fresh_character_summary is not None else self.last_character_update_summary
             win = update_window or self.world.update_window_text()
@@ -1734,7 +1735,7 @@ class WorldSession:
         # 手动更新也可能与后台更新并发，统一在此处加锁。
         with self._update_lock:
             if CONFIG["UPDATE_NOTICE"] and emit:
-                self._emit("processing", {"text": "正在更新角色状态与规划…"})
+                self._emit("processing", {"text": tr("正在更新角色状态与规划…")})
             self.new_request_id()
             win = update_window or self.world.update_window_text()
             updated = self.character_update_agent.run(

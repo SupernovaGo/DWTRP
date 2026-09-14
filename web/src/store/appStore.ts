@@ -15,6 +15,7 @@ import { useToast } from '@/store/toastStore'
 import { useNotices } from '@/store/noticeStore'
 import { isApiKeyMissing } from '@/store/apiKeyStore'
 import { useShell } from '@/store/useShell'
+import { t } from '@/i18n'
 
 let counter = 0
 const nextId = () => `m${++counter}`
@@ -123,7 +124,7 @@ function entryFromEvent(ev: SSEEvent): LogEntry | null {
       }
       break
     case 'error':
-      out = { id: nextId(), kind: 'system', text: `出错了：${ev.text}` }
+      out = { id: nextId(), kind: 'system', text: `${t('出错了：')}${ev.text}` }
       break
     default:
       return null
@@ -153,15 +154,15 @@ function buildLog(state: AppState): LogEntry[] {
 function noticeEntry(ev: SSEEvent): { title: string; msg: string } | null {
   switch (ev.type) {
     case 'world_update':
-      return { title: '🌍 世界更新', msg: (ev.rendered as string) || '世界已更新' }
+      return { title: t('🌍 世界更新'), msg: (ev.rendered as string) || t('世界已更新') }
     case 'character_update': {
       const names = (ev.updated as string[]) || []
-      return { title: '🎭 角色更新', msg: names.length ? `已更新：${names.join('、')}` : '角色状态已更新' }
+      return { title: t('🎭 角色更新'), msg: names.length ? `${t('已更新：')}${names.join(t('、'))}` : t('角色状态已更新') }
     }
     case 'memory_summary':
-      return { title: '💭 记忆总结', msg: (ev.detail as string) || '' }
+      return { title: t('💭 记忆总结'), msg: (ev.detail as string) || '' }
     case 'forget':
-      return { title: '🧹 记忆遗忘', msg: `${ev.character} 已遗忘部分记忆` }
+      return { title: t('🧹 记忆遗忘'), msg: t('{character} 已遗忘部分记忆', { character: ev.character }) }
     default:
       return null
   }
@@ -281,8 +282,8 @@ export const useApp = create<AppStore>((set, get) => ({
     // 未配置 API Key：给出显式提醒并跳到设置页，不发起请求。
     if (isApiKeyMissing()) {
       useToast.getState().push(
-        '未配置 DeepSeek API Key',
-        '请先在「设置 → 连接 / 高级」里填写 API Key 后再对话',
+        t('未配置 DeepSeek API Key'),
+        t('请先在「设置 → 连接 / 高级」里填写 API Key 后再对话'),
         'error',
       )
       useShell.getState().openSettings('connection')
@@ -322,7 +323,7 @@ export const useApp = create<AppStore>((set, get) => ({
         set((s) => ({
           streaming: false,
           statusMsg: null,
-          log: [...s.log, { id: nextId(), kind: 'system', text: `对话失败：${ev.text}` }],
+      log: [...s.log, { id: nextId(), kind: 'system', text: `${t('对话失败：')}${ev.text}` }],
         }))
         return
       }
@@ -347,7 +348,7 @@ export const useApp = create<AppStore>((set, get) => ({
     } catch (e) {
       set((s) => ({
         streaming: false,
-        log: [...s.log, { id: nextId(), kind: 'system', text: `对话失败：${(e as Error).message}` }],
+      log: [...s.log, { id: nextId(), kind: 'system', text: `${t('对话失败：')}${(e as Error).message}` }],
       }))
     }
     // 兜底：流已结束但没收到 turn_end/error 时，确保输入框与发送按钮解锁。
@@ -359,7 +360,7 @@ export const useApp = create<AppStore>((set, get) => ({
   rewindLast: async () => {
     if (get().streaming) return
     const storyMode = Boolean(get().appState?.story_mode)
-    set({ streaming: true, statusMsg: storyMode ? '正在重写剧情…' : '正在重新生成这一回合…', typing: null })
+    set({ streaming: true, statusMsg: storyMode ? t('正在重写剧情…') : t('正在重新生成这一回合…'), typing: null })
     const handle = (ev: SSEEvent) => {
       if (ev.type === 'turn_end') {
         const state = ev.state as AppState
@@ -389,7 +390,7 @@ export const useApp = create<AppStore>((set, get) => ({
         set((s) => ({
           streaming: false,
           statusMsg: null,
-          log: [...s.log, { id: nextId(), kind: 'system', text: `重写失败：${ev.text}` }],
+      log: [...s.log, { id: nextId(), kind: 'system', text: `${t('重写失败：')}${ev.text}` }],
         }))
         return
       }
@@ -404,7 +405,7 @@ export const useApp = create<AppStore>((set, get) => ({
       set((s) => ({
         streaming: false,
         statusMsg: null,
-        log: [...s.log, { id: nextId(), kind: 'system', text: `重写失败：${(e as Error).message}` }],
+      log: [...s.log, { id: nextId(), kind: 'system', text: `${t('重写失败：')}${(e as Error).message}` }],
       }))
     }
     if (get().streaming) {
@@ -416,7 +417,7 @@ export const useApp = create<AppStore>((set, get) => ({
     if (get().streaming) return
     set({
       streaming: true,
-      statusMsg: target === 'world' ? '正在更新世界…' : '正在更新角色状态与规划…',
+      statusMsg: target === 'world' ? t('正在更新世界…') : t('正在更新角色状态与规划…'),
       typing: null,
     })
     const handle = (ev: SSEEvent) => {
@@ -430,7 +431,7 @@ export const useApp = create<AppStore>((set, get) => ({
         set((s) => ({
           streaming: false,
           statusMsg: null,
-          log: [...s.log, { id: nextId(), kind: 'system', text: `更新失败：${ev.text}` }],
+      log: [...s.log, { id: nextId(), kind: 'system', text: `${t('更新失败：')}${ev.text}` }],
         }))
         return
       }
@@ -455,7 +456,7 @@ export const useApp = create<AppStore>((set, get) => ({
       set((s) => ({
         streaming: false,
         statusMsg: null,
-        log: [...s.log, { id: nextId(), kind: 'system', text: `更新失败：${(e as Error).message}` }],
+      log: [...s.log, { id: nextId(), kind: 'system', text: `${t('更新失败：')}${(e as Error).message}` }],
       }))
     }
     if (get().streaming) {
@@ -483,6 +484,7 @@ export const useApp = create<AppStore>((set, get) => ({
 }))
 
 function buildCombined(segments: PlayerSegment[], playerName: string): string {
+  // 这里的中文是**协议**（服务端按「说道 / 做了 / 下令」解析），不随界面语言变化。
   const labels: Record<PlayerSegment['type'], string> = { speech: '说道', action: '做了', think: '下令' }
   return segments
     .map((s) => {

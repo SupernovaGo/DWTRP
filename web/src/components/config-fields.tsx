@@ -1,6 +1,7 @@
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { XIcon } from 'lucide-react'
+import { t } from '@/i18n'
 
 export function NumberField({
   label,
@@ -128,7 +129,7 @@ export function TimeListField({
             </Button>
           </div>
         ))}
-        <Button size="xs" variant="outline" onClick={add}>＋ 添加时间点</Button>
+        <Button size="xs" variant="outline" onClick={add}>{t('＋ 添加时间点')}</Button>
       </div>
     </label>
   )
